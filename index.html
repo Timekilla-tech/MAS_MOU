@@ -433,6 +433,24 @@ function updatePills(){
   });
 }
 
+function escapeHtml(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Rebuild the type-filter options based on the provided data set
+function updateTypeFilter(data){
+  const sel = document.getElementById('type-filter');
+  if(!sel) return;
+  const current = sel.value;
+  const types = Array.from(new Set(data.map(d=>d.type).filter(Boolean)));
+  // sort types for stability
+  types.sort((a,b)=>a.localeCompare(b));
+  let html = '<option value="">Бүх төрөл</option>' + types.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+  sel.innerHTML = html;
+  // restore previous selection if still present
+  if(types.includes(current)) sel.value = current; else sel.value = '';
+}
+
 // ── TABLE RENDER ──────────────────────────────────────────────────────────────
 function render(){
   const q  = document.getElementById('search').value.toLowerCase();
@@ -456,6 +474,8 @@ function render(){
   
   syncMapSelection();
   updateMapHighlights(data);
+  // refresh available types for the current visible dataset
+  updateTypeFilter(data);
 
   const tb = document.getElementById('tbody');
   if(!data.length){
