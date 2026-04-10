@@ -144,7 +144,6 @@ footer{margin-top:2rem;font-size:12px;color:var(--text-sec);text-align:center;}
     <thead>
       <tr>
         <th style="width:42px">#</th>
-        <th style="width:22%">Улс</th>
         <th style="width:33%">Байгууллага</th>
         <th style="width:10%">Бүс</th>
         <th class="sort" style="width:14%" onclick="sortBy('date')">Огноо <span class="sort-ind" id="si-date">↕</span></th>
@@ -352,9 +351,14 @@ async function loadMap(){
         // attach click handler only for countries that have data
         el.addEventListener('click', (ev) => { ev.stopPropagation(); console.debug('map click', uid); toggleMapCountry(uid); });
       } else {
-        // make non-partner countries non-interactive (use attributes to avoid el.style issues)
-        const prev = el.getAttribute('style') || '';
-        el.setAttribute('style', prev + ';cursor:default;pointer-events:none;');
+        // Do not disable pointer events on parent/group elements that contain
+        // child elements which themselves are partner shapes. Disabling pointer
+        // events on a container would make its children non-interactive.
+        const hasPartnerDescendant = Array.from(el.querySelectorAll('[id]')).some(ch => partnerIds.has((ch.id||'').toUpperCase()));
+        if (!hasPartnerDescendant) {
+          const prev = el.getAttribute('style') || '';
+          el.setAttribute('style', prev + ';cursor:default;pointer-events:none;');
+        }
       }
     });
     syncMapSelection();
