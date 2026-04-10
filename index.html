@@ -144,6 +144,7 @@ footer{margin-top:2rem;font-size:12px;color:var(--text-sec);text-align:center;}
     <thead>
       <tr>
         <th style="width:42px">#</th>
+        <th style="width:18%">Улс</th>
         <th style="width:33%">Байгууллага</th>
         <th style="width:10%">Бүс</th>
         <th class="sort" style="width:14%" onclick="sortBy('date')">Огноо <span class="sort-ind" id="si-date">↕</span></th>
@@ -297,8 +298,8 @@ const RAW = [
 {"n":120, "country":"Сингапур", "eng":"Singapore", "svgId":"SG", "reg":"Ази", "org":"International Scholars Consultancy (Singapore)", "type":"санамж бичиг", "date":"2005.06.22"},
 {"n":121, "country":"Бразил", "eng":"Brazil", "svgId":"BR", "reg":"Америк", "org":"Brazil Academy of science", "type":"Хэлэлцээр", "date":"2007.03.15"},
 {"n":122, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"US Geological Survey", "type":"санамж бичиг", "date":"2003.06.24"},
-{"n":123, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Academy of Natural Science of Philadelphia", "type":"гэрээ", "date":"1997.08.04"},
-{"n":124, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Wirllife conservation society, New York, USA", "type":"гэрээ", "date":"1999.05.27"},
+{"n":123, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Academy of Natural Science of Philadelphia", "type":"Гэрээ", "date":"1997.08.04"},
+{"n":124, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Wirllife conservation society, New York, USA", "type":"Гэрээ", "date":"1999.05.27"},
 {"n":125, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Science solution INC", "type":"санамж бичиг", "date":"1997"},
 {"n":126, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"American Museum of Natural History", "type":"Хэлэлцээр", "date":"2000.08.15"},
 {"n":127, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Preservation of Wild Animals INC", "type":"санамж бичиг", "date":"1998.11.19"},
@@ -466,8 +467,16 @@ function render(){
 
   let data;
   if (activeMapIds.size && mapOverride) {
-    // When the user explicitly selected countries on the map, show only those (override filters)
-    data = RAW.filter(d => activeMapIds.has(d.svgId.toUpperCase()));
+    // When the user explicitly selected countries on the map, filter the RAW
+    // rows to those countries but still apply search/region/type filters so
+    // the table respects the `type-filter`.
+    data = RAW.filter(d => {
+      if(!activeMapIds.has((d.svgId||'').toUpperCase())) return false;
+      if(q && !d.org.toLowerCase().includes(q) && !d.country.toLowerCase().includes(q)) return false;
+      if(rg && regCode(d.reg) !== rg) return false;
+      if(tp && !d.type.includes(tp)) return false;
+      return true;
+    });
   } else {
     // Normal filtering path: apply search, region and type filters together.
     data = RAW.filter(d => {
@@ -580,7 +589,7 @@ function sortBy(k){
 // ── INIT ──────────────────────────────────────────────────────────────────────
 document.getElementById('search').addEventListener('input', render);
 document.getElementById('reg-filter').addEventListener('change', handleRegChange);
-document.getElementById('type-filter').addEventListener('change', render);
+document.getElementById('type-filter').addEventListener('change', () => { mapOverride = false; render(); });
 document.getElementById('si-date').addEventListener('click', () => sortBy('date'));
 // Initially activate all partner countries so the map behaves
 // as if a region was selected on first load.
