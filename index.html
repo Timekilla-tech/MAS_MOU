@@ -312,6 +312,7 @@ const RAW = [
 const partnerIds = new Set(RAW.map(d => d.svgId.toUpperCase()));
 let sortDir = 1, sortKey = null, selIdx = null;
 let activeMapIds = new Set(); // stores UPPERCASE svgId strings
+let mapOverride = false; // when true, activeMapIds fully override other filters (set when user clicks map)
 
 function regCode(r){
   if (!r && r !== '') return '';
@@ -370,6 +371,7 @@ function getMapEl(uid){
 function toggleMapCountry(uid){
   const el = getMapEl(uid);
   if(!el) return;
+  mapOverride = true;
   if(activeMapIds.has(uid)){
     activeMapIds.delete(uid);
     el.classList.remove('map-on');
@@ -458,10 +460,11 @@ function render(){
   const tp = document.getElementById('type-filter').value;
 
   let data;
-  if (activeMapIds.size) {
-    // When map selections exist, show only those (ignore other filters)
+  if (activeMapIds.size && mapOverride) {
+    // When the user explicitly selected countries on the map, show only those (override filters)
     data = RAW.filter(d => activeMapIds.has(d.svgId.toUpperCase()));
   } else {
+    // Normal filtering path: apply search, region and type filters together.
     data = RAW.filter(d => {
       if(q && !d.org.toLowerCase().includes(q) && !d.country.toLowerCase().includes(q)) return false;
       if(rg && regCode(d.reg) !== rg) return false;
@@ -472,6 +475,14 @@ function render(){
 
   if(sortKey==='date') data.sort((a,b)=>sortDir*(a.date>b.date?1:-1));
   
+  // If the user hasn't explicitly clicked the map (no override), make the
+  // map reflect the current filtered dataset (so type/reg filters update countries).
+  if(!mapOverride){
+    const ids = new Set(data.map(d => (d.svgId||'').toUpperCase()).filter(Boolean));
+    activeMapIds = ids;
+    updatePills();
+  }
+
   syncMapSelection();
   updateMapHighlights(data);
   // refresh available types for the current visible dataset
@@ -519,14 +530,17 @@ function handleRegChange(e){
   if(!code){
     // clear selections when choosing "Бүх бүс нутаг"
     activeMapIds.clear();
+    mapOverride = false;
     updatePills();
     render();
     return;
   }
   // collect unique svgIds for rows matching the region code
   const ids = new Set(RAW.filter(d=>regCode(d.reg)===code).map(d=> (d.svgId||'').toUpperCase()).filter(Boolean));
+  // populate pills/highlights for the region but do not enable map override
   activeMapIds.clear();
   ids.forEach(id => activeMapIds.add(id));
+  mapOverride = false;
   updatePills();
   render();
 }
