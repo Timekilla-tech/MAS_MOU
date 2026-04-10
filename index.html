@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ШУА-ийн гадаад хамтын ажиллагаа</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:#ffffff; --bg-sec:#f5f5f3; --bg-info:#E6F1FB;
+  --text:#1a1a18; --text-sec:#6b6b67; --text-info:#0C447C;
+  --border:rgba(0,0,0,0.12); --border-sec:rgba(0,0,0,0.22);
+  --r-md:8px; --r-lg:12px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1c1c1a;--bg-sec:#252523;--bg-info:#042C53;--text:#f0f0ec;--text-sec:#9a9a94;--text-info:#85B7EB;--border:rgba(255,255,255,0.12);--border-sec:rgba(255,255,255,0.22);}
+  .reg-EU{background:#26215C!important;color:#AFA9EC!important}
+  .reg-AS{background:#04342C!important;color:#5DCAA5!important}
+  .reg-AM{background:#4A1B0C!important;color:#F0997B!important}
+  .reg-OT{background:#2C2C2A!important;color:#B4B2A9!important}
+  tbody tr.sel{background:#042C53!important}
+  #map-svg{background:#252523}
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:1.5rem;max-width:1100px;margin:0 auto;}
+#map-svg{display:block;width:100%;height:auto;border-radius:var(--r-lg);background:#eeeee8;margin-bottom:.5rem;border:0.5px solid var(--border);}
+.land{fill:#c8c8c4;stroke:#fff;stroke-width:.3;transition:fill .2s;}
+.land.has-data{fill:#9FE1CB;cursor:pointer;}
+.land.has-data:hover{fill:#5DCAA5;}
+.land.map-on{fill:#378ADD!important;stroke:#185FA5;}
+.land.map-highlight{fill:yellow;stroke:#A9CFF6;}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--text-sec);margin-bottom:.75rem;align-items:center;flex-wrap:wrap;}
+.leg-dot{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:4px;vertical-align:middle;}
+.map-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;min-height:26px;}
+.map-pill{font-size:12px;padding:3px 10px 3px 12px;border-radius:20px;background:#E6F1FB;color:#0C447C;cursor:pointer;border:1px solid #B5D4F4;display:flex;align-items:center;gap:6px;font-family:var(--font);}
+.map-pill .x{opacity:.55;font-size:11px;}
+.map-pill:hover .x{opacity:1;}
+.map-hint{font-size:12px;color:var(--text-sec);}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:1.25rem;}
+h1{font-size:20px;font-weight:500;color:var(--text);}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:var(--bg-info);color:var(--text-info);}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--bg-sec);border-radius:var(--r-md);padding:14px 16px;}
+.stat-n{font-size:26px;font-weight:500;color:var(--text);line-height:1;}
+.stat-l{font-size:12px;color:var(--text-sec);margin-top:4px;}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;align-items:center;}
+input[type="text"],select{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--text);border:0.5px solid var(--border-sec);border-radius:var(--r-md);padding:8px 12px;outline:none;transition:border-color .15s;}
+input[type="text"]{flex:1;min-width:200px;}
+select{min-width:140px;cursor:pointer;}
+input[type="text"]:focus,select:focus{border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,.15);}
+.tbl-wrap{border:0.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;min-width:600px;}
+thead th{background:var(--bg-sec);padding:10px 14px;text-align:left;font-weight:500;color:var(--text-sec);font-size:12px;border-bottom:0.5px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+th.sort{cursor:pointer;user-select:none;}
+th.sort:hover{color:var(--text);}
+.sort-ind{margin-left:4px;opacity:.5;}
+tbody tr{border-bottom:0.5px solid var(--border);cursor:pointer;transition:background .12s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--bg-sec);}
+tbody tr.sel{background:#E6F1FB;}
+td{padding:10px 14px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+td.num{color:var(--text-sec);font-size:12px;}
+.reg-pill{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block;white-space:nowrap;}
+.reg-EU{background:#EEEDFE;color:#3C3489;}
+.reg-AS{background:#E1F5EE;color:#085041;}
+.reg-AM{background:#FAECE7;color:#712B13;}
+.reg-OT{background:#F1EFE8;color:#444441;}
+.empty{text-align:center;padding:2.5rem;color:var(--text-sec);font-size:13px;}
+.detail{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:1.25rem 1.5rem;margin-top:1rem;display:none;}
+.detail.show{display:block;}
+.detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.detail-title{font-size:15px;font-weight:500;color:var(--text);}
+.detail-sub{font-size:12px;color:var(--text-sec);margin-top:3px;}
+.close-btn{font-size:12px;color:var(--text-sec);cursor:pointer;border:0.5px solid var(--border-sec);border-radius:6px;padding:4px 10px;background:transparent;font-family:var(--font);transition:background .12s;flex-shrink:0;}
+.close-btn:hover{background:var(--bg-sec);}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:0.5px solid var(--border);padding-top:12px;}
+.detail-row{display:flex;flex-direction:column;gap:3px;}
+.detail-label{font-size:11px;color:var(--text-sec);}
+.detail-val{font-size:14px;color:var(--text);font-weight:500;white-space:normal;line-height:1.4;}
+footer{margin-top:2rem;font-size:12px;color:var(--text-sec);text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>ШУА-ийн гадаад хамтын ажиллагаа</h1>
+  <span class="badge">Олон улсын гэрээ</span>
+</div>
+
+<svg id="map-svg" viewBox="0 0 1000 500"></svg>
+
+<div class="legend">
+  <span><span class="leg-dot" style="background:#9FE1CB"></span>Гэрээтэй улс — дарж шүүх</span>
+  <span><span class="leg-dot" style="background:#378ADD"></span>Сонгосон</span>
+  <span><span class="leg-dot" style="background:#c8c8c4"></span>Гэрээгүй</span>
+</div>
+
+<div class="map-filters" id="map-filters">
+  <span class="map-hint" id="map-hint">Газрын зурган дээр улс дарж шүүх</span>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="s-total">0</div><div class="stat-l">Нийт гэрээ</div></div>
+  <div class="stat"><div class="stat-n" id="s-countries">0</div><div class="stat-l">Улс орон</div></div>
+</div>
+
+<div class="filters">
+  <input type="text" id="search" placeholder="Байгууллага хайх...">
+  <select id="reg-filter">
+    <option value="">Бүх бүс нутаг</option>
+    <option value="Европ">Европ</option>
+    <option value="Ази">Ази</option>
+    <option value="Америк">Америк</option>
+    <option value="Африк">Африк</option>
+  </select>
+  <select id="type-filter">
+    <option value="">Бүх төрөл</option>
+    <option value="Санамж бичиг">Санамж бичиг</option>
+    <option value="Төлөвлөгөө">Төлөвлөгөө</option>
+    <option value="Хэлэлцээр">Хэлэлцээр</option>
+    <option value="Протокол, Хэлэлцээр">Протокол, Хэлэлцээр</option>
+    <option value="Тохиролцоо">Тохиролцоо</option>
+    <option value="Гэрээ">Гэрээ</option>
+    <option value="Санамж бичигийн шинэчлэл">Санамж бичигийн шинэчлэл</option>
+    <option value="Хэлэлцээрийн төлөвлөгөө">Хэлэлцээрийн төлөвлөгөө</option>
+    <option value="Гишүүнчлэлийн хэлэлцээр">Гишүүнчлэлийн хэлэлцээр</option>
+    <option value="Төсөл санхүүжүүлэх гэрээ">Төсөл санхүүжүүлэх гэрээ</option>
+    <option value="Харилцан солилцоо хийх">Харилцан солилцоо хийх</option>
+    <option value="Agreement on Academic exchanges">Agreement on Academic exchanges</option>
+    <option value="joint statement">joint statement</option>
+    <option value="MOU">MOU</option>
+    <option value="Төслийн гэрээ">Төслийн гэрээ</option>
+    <option value="хөтөлбөр">хөтөлбөр</option>
+    <option value="Ном хэвлүүлэх гэрээ">Ном хэвлүүлэх гэрээ</option>
+    <option value="Протокол">Протокол</option>
+  </select>
+</div>
+
+<div class="tbl-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:42px">#</th>
+        <th style="width:22%">Улс</th>
+        <th style="width:33%">Байгууллага</th>
+        <th style="width:10%">Бүс</th>
+        <th class="sort" style="width:14%" onclick="sortBy('date')">Огноо <span class="sort-ind" id="si-date">↕</span></th>
+        <th style="width:18%">Төрөл</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div class="detail" id="detail">
+  <div class="detail-header">
+    <div>
+      <div class="detail-title" id="d-name"></div>
+      <div class="detail-sub" id="d-country"></div>
+    </div>
+    <button class="close-btn" onclick="closeDetail()">Хаах ✕</button>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-row"><span class="detail-label">Огноо</span><span class="detail-val" id="d-date"></span></div>
+    <div class="detail-row"><span class="detail-label">Төрөл</span><span class="detail-val" id="d-type"></span></div>
+    <div class="detail-row"><span class="detail-label">Бүс нутаг</span><span class="detail-val" id="d-reg"></span></div>
+    <div class="detail-row"><span class="detail-label">Улс</span><span class="detail-val" id="d-country2"></span></div>
+  </div>
+</div>
+
+<footer>Монгол Улсын Шинжлэх Ухааны Академи &mdash; Олон улсын гэрээний бүртгэл</footer>
+
+<script>
+// ── RAW DATA (each row = one agreement) ──────────────────────────────────────
+const RAW = [
+  {"n":1, "country":"Өмнөд Африкийн Бүгд Найрамдах Улс", "eng":"South Africa", "svgId":"ZA", "reg":"Африк", "org":"Шинжлэх ухаан, үйлдвэрлэлийн судалгааны зөвлөл (CSIR)", "type":"Санамж бичиг", "date":"2012.07.18"},
+{"n":2, "country":"Өмнөд Африкийн Бүгд Найрамдах Улс", "eng":"South Africa", "svgId":"ZA", "reg":"Африк", "org":"MINTEK", "type":"Санамж бичиг", "date":"2012.07.18"},
+{"n":3, "country":"Бүгд Найрамдах Австри Улс", "eng":"Austria", "svgId":"AT", "reg":"Европ", "org":"Австрийн ШУА", "type":"Төлөвлөгөө", "date":"2000.12.01"},
+{"n":4, "country":"Бүгд Найрамдах Азербайжан Улс", "eng":"Azerbaijan", "svgId":"AZ", "reg":"Европ", "org":"Азербайжаны ҮШУА", "type":"Хэлэлцээр", "date":"2018.05.31"},
+{"n":5, "country":"Бүгд Найрамдах Беларусь Улс", "eng":"Belarus", "svgId":"BY", "reg":"Европ", "org":"Беларусийн ҮШУА", "type":"Хэлэлцээр", "date":"2017.05.24"},
+{"n":6, "country":"Бүгд Найрамдах Болгар Улс", "eng":"Bulgaria", "svgId":"BG", "reg":"Европ", "org":"Болгарын ШУА", "type":"Хэлэлцээр", "date":"1997, 2015 оны 5 сарын 11"},
+{"n":7, "country":"Бүгд Найрамдах Чех Улс", "eng":"Czech", "svgId":"CZ", "reg":"Европ", "org":"Чехословакийн ШУА, БНЧУ-ын ШУА", "type":"Протокол, Хэлэлцээр", "date":"1991, 1999.05.24, 2011.04.15, 2016.02.16"},
+{"n":8, "country":"Бүгд Найрамдах Чех Улс", "eng":"Czech", "svgId":"CZ", "reg":"Европ", "org":"Чехийн үндэсний музей", "type":"Санамж бичиг", "date":"2023.05.18"},
+{"n":9, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Германы академик солилцооны алба (DAAD)", "type":"Хэлэлцээр", "date":"1991.10.03"},
+{"n":10, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Германы судалгааны нийгэмлэг (DFG), ШУТСан", "type":"Санамж бичиг", "date":"1999.12.06"},
+{"n":11, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Германы археологийн институтийн ерөнхий ба харьцуулсан археологийн комисс (ЕХАК), Бонн", "type":"Тохиролцоо", "date":"1998.09.20"},
+{"n":12, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Германы археологийн хүрээлэнгийн Европын бус соёлын археологийн комисс (KAAK)", "type":"Хэлэлцээр", "date":"2007.07.06"},
+{"n":13, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Герда Хенкелийн сан, МУИС", "type":"Тохиролцоо", "date":"2008.09.05, 2011 оны 11 сар"},
+{"n":14, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Бонны их сургууль", "type":"Тохиролцоо", "date":"2009.09 сар, 2014.5 сар, 2019.6 сар"},
+{"n":15, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Бонны их сургууль, Берлиний чөлөөт их сургууль, Берлин судлалын нийгэмлэг", "type":"Санамж бичиг", "date":"2011.08.31"},
+{"n":16, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Хирмер хэвлэлийн газар", "type":"Гэрээ", "date":"2012.12.04/2012.12.07"},
+{"n":17, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Хельмгольцын хүрээлэн буй орчны судалгааны төв (UFZ)", "type":"Хэлэлцээр", "date":"2013.08.29, 2013.09.01, 2018.08.31"},
+{"n":18, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Гельмгольц Дрезден-Россендорфын нэрэмжит төв (HZDR)", "type":"Санамж бичиг", "date":"2014.02.13/2014.01.20"},
+{"n":19, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Халле-Виттенбергийн Мартин Лютерийн их сургууль", "type":"Хэлэлцээр", "date":"2014.04.24/2014.04.29"},
+{"n":20, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Германы археологийн хүрээлэн", "type":"Тохиролцоо", "date":"2014.07 сар, 2019.09 сар,"},
+{"n":21, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Линдаугийн нобелийн шагналтнуудын уулзалтын зөвлөл, сан", "type":"Санамж бичиг", "date":"2015.10."},
+{"n":22, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Лейбниз холбоо", "type":"Санамж бичиг", "date":"2015.10.15"},
+{"n":23, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"ХБНГУ-ын гадаад хэргийн яам", "type":"Гэрээ", "date":"2015.11.20"},
+{"n":24, "country":"Холбооны Бүгд Найрамдах Герман Улс", "eng":"Germany", "svgId":"DE", "reg":"Европ", "org":"Макс Планкийн нийгэмлэг", "type":"Санамж бичиг", "date":"2015.11.21"},
+{"n":25, "country":"Унгар Улс", "eng":"Hungary", "svgId":"HU", "reg":"Европ", "org":"Унгарын ШУА", "type":"Хэлэлцээр", "date":"1959.10.14, 1995.05.09-нд, 2014.11.12-нд, 2021.06.03/2021.05.06"},
+{"n":26, "country":"Унгар Улс", "eng":"Hungary", "svgId":"HU", "reg":"Европ", "org":"Унгарын эрдэм шинжилгээний хүрээлэн", "type":"Санамж бичиг", "date":"2021.07.01"},
+{"n":27, "country":"Бүгд Найрамдах Итали Улс", "eng":"Italy", "svgId":"IT", "reg":"Европ", "org":"Италийн үндэсний судалгааны зөвлөл", "type":"Санамж бичигийн шинэчлэл", "date":"2003.08.27"},
+{"n":28, "country":"Бүгд Найрамдах Итали Улс", "eng":"Italy", "svgId":"IT", "reg":"Европ", "org":"Макерата их сургууль", "type":"Хэлэлцээр", "date":"2005.05."},
+{"n":29, "country":"Бүгд Найрамдах Итали Улс", "eng":"Italy", "svgId":"IT", "reg":"Европ", "org":"Макератагийн худалдаа аж үйлдвэрийн танхим", "type":"Хэлэлцээрийн төлөвлөгөө", "date":"2007.03.27"},
+{"n":30, "country":"Бүгд Найрамдах Итали Улс", "eng":"Italy", "svgId":"IT", "reg":"Европ", "org":"БНИУлс дах Монгол Улсын өргөмжит консул", "type":"Санамж бичиг", "date":"2009.09.07"},
+{"n":31, "country":"Бүгд Найрамдах Итали Улс", "eng":"Italy", "svgId":"IT", "reg":"Европ", "org":"Италийн үндэсний судалгааны зөвлөл", "type":"Санамж бичиг", "date":"2014.09.02"},
+{"n":32, "country":"Бүгд Найрамдах Итали Улс", "eng":"Italy", "svgId":"IT", "reg":"Европ", "org":"Турины их сургууль", "type":"Хэлэлцээр", "date":"1998"},
+{"n":33, "country":"Бүгд Найрамдах Польш Улс", "eng":"Poland", "svgId":"PL", "reg":"Европ", "org":"Польшийн ШУА", "type":"Хэлэлцээр", "date":"1995.07.17, 2013.01.21"},
+{"n":34, "country":"Бүгд Найрамдах Польш Улс", "eng":"Poland", "svgId":"PL", "reg":"Европ", "org":"Варшавын Их сургууль", "type":"Хэлэлцээр", "date":"2023.04.25"},
+{"n":35, "country":"Бүгд Найрамдах Словак Улс", "eng":"Slovak Republic", "svgId":"SK", "reg":"Европ", "org":"Словакийн ШУА", "type":"Хэлэлцээр", "date":"2003.04."},
+{"n":36, "country":"Бүгд Найрамдах Словак Улс", "eng":"Slovak Republic", "svgId":"SK", "reg":"Европ", "org":"Словакийн ШУА", "type":"Санамж бичиг", "date":"2012.01.11"},
+{"n":37, "country":"Их Британи, Умард Ирландын Нэгдсэн Хаант Улс", "eng":"Ireland", "svgId":"IE", "reg":"Европ", "org":"Хааны нийгэмлэг", "type":"Санамж бичиг", "date":"1993.04.11"},
+{"n":38, "country":"Их Британи, Умард Ирландын Нэгдсэн Хаант Улс", "eng":"Ireland", "svgId":"IE", "reg":"Европ", "org":"Кембрижийн их сургууль", "type":"Санамж бичиг", "date":"2013.03.18"},
+{"n":39, "country":"Их Британи, Умард Ирландын Нэгдсэн Хаант Улс", "eng":"Ireland", "svgId":"IE", "reg":"Европ", "org":"Ubiquity press", "type":"Гишүүнчлэлийн хэлэлцээр", "date":"44685"},
+{"n":40, "country":"Украйн улс", "eng":"Ukraine", "svgId":"UA", "reg":"Европ", "org":"Украины ҮШУА", "type":"Хэлэлцээр", "date":"1997.06.19"},
+{"n":41, "country":"Украйн улс", "eng":"Ukraine", "svgId":"UA", "reg":"Европ", "org":"Украины ҮШУА", "type":"Санамж бичиг", "date":"2006.04.18"},
+{"n":42, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Новосибирск шинжлэх ухаан, технологийн паркийн гүйцэтгэх захиргаа", "type":"Хэлэлцээр", "date":"2001.08.23"},
+{"n":43, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Томирис продюсерийн төв Бие даасан ашгийн бус байгууллага", "type":"Санамж бичиг", "date":"2022.09.30"},
+{"n":44, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Байгалын улсын их сургууль", "type":"Хэлэлцээр", "date":"2015.12.24"},
+{"n":45, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Бүгд Найрамдах Татарстан улсын ШУА", "type":"Хэлэлцээр", "date":"2012.11.15"},
+{"n":46, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Дорнод сибирийн технологи, удирдлагын улсын их сургууль", "type":"Хэлэлцээр", "date":"2022.04.25"},
+{"n":47, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"ОХУ-ын ШУА, Монголын их, дээд сургуулиудын консорциум", "type":"Хэлэлцээр", "date":"2000.04.15, 2005.12.31"},
+{"n":48, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Оросын түүхийн нийгэмлэг", "type":"Санамж бичиг", "date":"2015.02.16"},
+{"n":49, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Оросын ШУА", "type":"Хэлэлцээр", "date":"2001.04.11, 2011.10.22, 2019.09.06"},
+{"n":50, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Оросын ШУА-ийн Алс Дорнодын салбар", "type":"Хэлэлцээр", "date":"2010.12.20"},
+{"n":51, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Оросын ШУА-ийн Сибирийн салбар", "type":"Хэлэлцээр", "date":"2000.03.30, 2010.12.10"},
+{"n":52, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Оросын ШУА-ийн Сибирийн салбарын Буриадын ШУ-ы төв", "type":"Хэлэлцээр", "date":"2003.10.31, 2010.07.16"},
+{"n":53, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Оросын ШУА-ийн Сибирийн салбарын Красноярскийн ШУ-ы төв", "type":"Хэлэлцээр", "date":"2011"},
+{"n":54, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Оросын ШУА-ийн Сибирийн салбарын Эрхүүгийн ШУ-ы төв", "type":"Хэлэлцээр", "date":"2010.07.16"},
+{"n":55, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Оросын ШУА-ийн Уралын салбар", "type":"Хэлэлцээр", "date":"2010.11.10"},
+{"n":56, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"ОХУ-ийн ШУА-ийн Сибирийн салбарын Хойд ба Зүүн хойд Азийн хил дамнасан харилцан үйлчлэлийн асуудлын талаарх Олон улсын шинжлэх ухааны төв", "type":"Хэлэлцээр", "date":"2021.09.10"},
+{"n":57, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"ОХУ-ын Буриадын улсын их сургууль", "type":"Хэлэлцээр", "date":"2014.10.08"},
+{"n":58, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"ОХУ-ын Бүгд Найрамдах Саха Улсын (Якут) ШУА", "type":"Хэлэлцээр", "date":"2009.06.13, 2018.02.27"},
+{"n":59, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"ОХУ-ын Бүгд Найрамдах Тува улсын Боловсон хүчний бодлого, шинжлэх ухаан, боловсролын байгууллагуудын яам", "type":"Хэлэлцээр", "date":"2003.05.23"},
+{"n":60, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Санкт-Петербургийн улсын их сургууль", "type":"Хэлэлцээр", "date":"2001.05.18"},
+{"n":61, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Уралын холбооны их сургууль", "type":"Хэлэлцээр", "date":"2017.12.11"},
+{"n":62, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Эрхүүгийн судалгаа, техникийн үндэсний их сургууль", "type":"Хэлэлцээр", "date":"2017.08.07"},
+{"n":63, "country":"Оросын Холбооны Улс", "eng":"Russia", "svgId":"RU", "reg":"Европ", "org":"Intersputnik, APSCO 3 талт", "type":"Хэлэлцээр", "date":"46103"},
+{"n":64, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"БНХАУ ШУА", "type":"Хэлэлцээр", "date":"2017.06.29"},
+{"n":65, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"БНХАУ-ын ӨМӨЗО-ны Нийгмийн ШУА", "type":"Хэлэлцээр", "date":"2011.03.25"},
+{"n":66, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"University of Petroleum /БНХАУ/", "type":"санамж бичиг", "date":"2003.07.28"},
+{"n":67, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"ӨМӨЗО-ны БИС- ШУА цөлжилтийн үйл явц төсөл", "type":"Төсөл санхүүжүүлэх гэрээ", "date":"2009.12.22"},
+{"n":68, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"Chinese academy of social sciences memorandum 2010", "type":"Харилцан солилцоо хийх", "date":"40486"},
+{"n":69, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"Inner mongolia university-", "type":"Agreement on Academic exchanges", "date":"41925"},
+{"n":70, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"БНХАУ НШУ академийн номын сан", "type":"санамж бичиг", "date":"42551"},
+{"n":71, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"БНХАУ Earthquake Administration", "type":"санамж бичиг", "date":"2007.06.30"},
+{"n":72, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"БНХАУ-ын ӨМӨЗО-ны Багшийн Их сургууль", "type":"санамж бичиг", "date":"2023.04.27"},
+{"n":73, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"ШУА-ЖС Инженеринг-Хятадын цагаан хэрэм корп- Хятадын машин механизм корп", "type":"санамж бичиг", "date":"2023.12.05"},
+{"n":74, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"Ази номхон далайн сансрын хамтын ажтллагааны байгууллага (APSCO)", "type":"санамж бичиг", "date":"45898"},
+{"n":75, "country":"БНХАУ", "eng":"China", "svgId":"CN", "reg":"Ази", "org":"Бээжингийн Геошинжлэх ухааны их сургууль", "type":"санамж бичиг", "date":"46111"},
+{"n":76, "country":"Энэтхэг", "eng":"India", "svgId":"IN", "reg":"Ази", "org":"Энэтхэг INSA-MAS", "type":"санамж бичиг", "date":"2014.10.17"},
+{"n":77, "country":"Энэтхэг", "eng":"India", "svgId":"IN", "reg":"Ази", "org":"Council of Scientific and Industrial Research", "type":"joint statement", "date":"39729"},
+{"n":78, "country":"Энэтхэг", "eng":"India", "svgId":"IN", "reg":"Ази", "org":"Indian National Academy of Sciences", "type":"MOU", "date":"41928"},
+{"n":79, "country":"Иран", "eng":"Iran", "svgId":"IR", "reg":"Ази", "org":"Иран ШУА", "type":"санамж бичиг", "date":"2013.12.05"},
+{"n":80, "country":"Иран", "eng":"Iran", "svgId":"IR", "reg":"Ази", "org":"Иран U/Zanjan-MAS", "type":"санамж бичиг", "date":"2017.05.17"},
+{"n":81, "country":"Иран", "eng":"Iran", "svgId":"IR", "reg":"Ази", "org":"Political International studies Iran", "type":"санамж бичиг", "date":"35521"},
+{"n":82, "country":"Япон", "eng":"Japan", "svgId":"JP", "reg":"Ази", "org":"Япон улсын Тохокү их сургууль", "type":"санамж бичиг", "date":"2011.02.08"},
+{"n":83, "country":"Япон", "eng":"Japan", "svgId":"JP", "reg":"Ази", "org":"Hayashibara Ltd agreement paleontological research Collaboration", "type":"санамж бичиг", "date":"2000.05.22 2021.05.16"},
+{"n":84, "country":"Япон", "eng":"Japan", "svgId":"JP", "reg":"Ази", "org":"Okiyama их сургууль", "type":"санамж бичиг", "date":"2013.10.22 2017.02.12"},
+{"n":85, "country":"Япон", "eng":"Japan", "svgId":"JP", "reg":"Ази", "org":"Kanazawa их сургууль", "type":"Хэлэлцээр", "date":"2009.04.01 2012.03.31"},
+{"n":86, "country":"Япон", "eng":"Japan", "svgId":"JP", "reg":"Ази", "org":"NITE", "type":"санамж бичиг", "date":"2006.06.29"},
+{"n":87, "country":"Япон", "eng":"Japan", "svgId":"JP", "reg":"Ази", "org":"NITE Biological Resource Center", "type":"Төслийн гэрээ", "date":"2016.01.22"},
+{"n":88, "country":"Япон", "eng":"Japan", "svgId":"JP", "reg":"Ази", "org":"Японы Үндэсний Хүмүүнлэгийн хүрээлэн", "type":"Хэлэлцээр", "date":"2022.04.01"},
+{"n":89, "country":"Казакстан", "eng":"Kyrgyzstan", "svgId":"KG", "reg":"Ази", "org":"ОЛОН УЛСЫН ТҮРЭГ АКАДЕМИ", "type":"санамж бичиг", "date":"2014.07.03, 2021.03.28"},
+{"n":90, "country":"Казакстан", "eng":"Kyrgyzstan", "svgId":"KG", "reg":"Ази", "org":"Казакстан Улсын Шинжлэх Ухааны Академи", "type":"Хэлэлцээр", "date":"1997.07.02, 2017.05.26"},
+{"n":91, "country":"Кувейт", "eng":"Kuwait", "svgId":"KW", "reg":"Ази", "org":"Кувейтын сан", "type":"санамж бичиг", "date":"2015.09.25"},
+{"n":92, "country":"Киргизстан", "eng":"Kyrgyzstan", "svgId":"KG", "reg":"Ази", "org":"National Academy of Sciences of Kyrgyzstan", "type":"Хэлэлцээр", "date":"2019"},
+{"n":93, "country":"Киргизстан", "eng":"Kyrgyzstan", "svgId":"KG", "reg":"Ази", "org":"Hazara World Council", "type":"санамж бичиг", "date":"2015.09.25"},
+{"n":94, "country":"Киргизстан", "eng":"Kyrgyzstan", "svgId":"KG", "reg":"Ази", "org":"World Heritage Foundation", "type":"санамж бичиг", "date":"2015.09.25"},
+{"n":95, "country":"Киргизстан", "eng":"Kyrgyzstan", "svgId":"KG", "reg":"Ази", "org":"Kyrgyzstan Archeolgy Institue", "type":"Гэрээ", "date":"2016.05.25"},
+{"n":96, "country":"Непал", "eng":"Nepal", "svgId":"NP", "reg":"Ази", "org":"Непал-ШУА", "type":"санамж бичиг", "date":"2011.11.01"},
+{"n":97, "country":"БНАСАУ", "eng":"North Korea", "svgId":"KP", "reg":"Ази", "org":"БНАСАУ-ын ШУА", "type":"хөтөлбөр", "date":"2003.12.19"},
+{"n":98, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"KIST", "type":"санамж бичиг", "date":"2006.02.13, 2009.06.14, 2011.09.16"},
+{"n":99, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"Korea research foundation", "type":"санамж бичиг", "date":"2006.11.21 2006,2011,2017"},
+{"n":100, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"Зүүн хойд азийн түүхийн сан", "type":"санамж бичиг", "date":"2010.06.02"},
+{"n":101, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"National Institute of biological Resource Korea", "type":"санамж бичиг", "date":"2015.06.19"},
+{"n":102, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"KAST", "type":"санамж бичиг", "date":"2015.11.30"},
+{"n":103, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"National Museum of Korea", "type":"санамж бичиг", "date":"2019.08"},
+{"n":104, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"Incheon National University", "type":"санамж бичиг", "date":"2019.05.31"},
+{"n":105, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"Korea science and engineering foundation", "type":"санамж бичиг", "date":"2002.09.02"},
+{"n":106, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"Солонгосын ШУТ-ийн хүрээлэн", "type":"санамж бичиг", "date":"2017.06.19"},
+{"n":107, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"Солонгосын ШУТ-ийн Их сургууль (UST)", "type":"санамж бичиг", "date":"2023.09.11"},
+{"n":108, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"National Academy of Sciences of Korea", "type":"Хэлэлцээр", "date":"45785"},
+{"n":109, "country":"БНСУ", "eng":"South Korea", "svgId":"KR", "reg":"Ази", "org":"Daejeon Center for Creative Economy & Innovation", "type":"санамж бичиг", "date":"45906"},
+{"n":110, "country":"Тайвань", "eng":"Taiwan", "svgId":"TW", "reg":"Ази", "org":"Тaipei Economic Representative offive", "type":"санамж бичиг", "date":"2017.07.07"},
+{"n":111, "country":"Тайвань", "eng":"Taiwan", "svgId":"TW", "reg":"Ази", "org":"National Science Council Taiwan", "type":"Хэлэлцээр", "date":"2007.08.21"},
+{"n":112, "country":"Тайвань", "eng":"Taiwan", "svgId":"TW", "reg":"Ази", "org":"Academia Sinica Taipei", "type":"санамж бичиг", "date":"2014.07.31"},
+{"n":113, "country":"Тайвань", "eng":"Taiwan", "svgId":"TW", "reg":"Ази", "org":"National palace Museum", "type":"Ном хэвлүүлэх гэрээ", "date":"2018.07.02"},
+{"n":114, "country":"Турк", "eng":"Turkey", "svgId":"TR", "reg":"Ази", "org":"Technological Research Council of Turkey (TUBITAK)", "type":"Хэлэлцээр", "date":"2006"},
+{"n":115, "country":"Турк", "eng":"Turkey", "svgId":"TR", "reg":"Ази", "org":"Istanbul Technical University", "type":"Протокол", "date":"2018.02.01"},
+{"n":116, "country":"Узбекстан", "eng":"Uzbekistan", "svgId":"UZ", "reg":"Ази", "org":"Uzbekstan Academy of Science", "type":"Хэлэлцээр", "date":"2011.11.30"},
+{"n":117, "country":"Вьетнам", "eng":"Vietnam", "svgId":"VN", "reg":"Ази", "org":"Vietnam Academy of Social", "type":"Хэлэлцээр", "date":"2012.05.31"},
+{"n":118, "country":"Вьетнам", "eng":"Vietnam", "svgId":"VN", "reg":"Ази", "org":"Вьетнамын Шинжлэх ухаан, технологийн академи", "type":"санамж бичиг", "date":"45567"},
+{"n":119, "country":"Туркменистан", "eng":"Turkmenistan", "svgId":"TM", "reg":"Ази", "org":"Туркменистан улсын шинжлэх ухааны академи", "type":"санамж бичиг", "date":"45812"},
+{"n":120, "country":"Сингапур", "eng":"Singapore", "svgId":"SG", "reg":"Ази", "org":"International Scholars Consultancy (Singapore)", "type":"санамж бичиг", "date":"2005.06.22"},
+{"n":121, "country":"Бразил", "eng":"Brazil", "svgId":"BR", "reg":"Америк", "org":"Brazil Academy of science", "type":"Хэлэлцээр", "date":"2007.03.15"},
+{"n":122, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"US Geological Survey", "type":"санамж бичиг", "date":"2003.06.24"},
+{"n":123, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Academy of Natural Science of Philadelphia", "type":"гэрээ", "date":"1997.08.04"},
+{"n":124, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Wirllife conservation society, New York, USA", "type":"гэрээ", "date":"1999.05.27"},
+{"n":125, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Science solution INC", "type":"санамж бичиг", "date":"1997"},
+{"n":126, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"American Museum of Natural History", "type":"Хэлэлцээр", "date":"2000.08.15"},
+{"n":127, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Preservation of Wild Animals INC", "type":"санамж бичиг", "date":"1998.11.19"},
+{"n":128, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"National Academy of Sciences", "type":"Хэлэлцээр", "date":"1991.06.27"},
+{"n":129, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Америкийн Эрдмийн Нийгэмлэгүүдийн Зөвлөл", "type":"Хэлэлцээр", "date":"1989"},
+{"n":130, "country":"АНУ", "eng":"United States", "svgId":"US", "reg":"Америк", "org":"Олон улсын эрдэм шинжилгээ солилцооны товчоо", "type":"Хэлэлцээр", "date":"1991"},
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+const partnerIds = new Set(RAW.map(d => d.svgId.toUpperCase()));
+let sortDir = 1, sortKey = null, selIdx = null;
+let activeMapIds = new Set(); // stores UPPERCASE svgId strings
+
+function regCode(r){
+  if (!r && r !== '') return '';
+  const s = String(r).trim();
+  if (!s) return '';
+  const up = s.toUpperCase();
+  if (up === 'EU' || up === 'ЕВРОП' || s === 'Европ') return 'EU';
+  if (up === 'AS' || up === 'АЗИ' || s === 'Ази') return 'AS';
+  if (up === 'AM' || up === 'АМЕРИК' || s === 'Америк') return 'AM';
+  if (up === 'OT' || up === 'АФРИК' || s === 'Африк' || s === 'Бусад') return 'OT';
+  // already a short code?
+  if (['EU','AS','AM','OT'].includes(up)) return up;
+  return s;
+}
+
+function regLabel(r){ return {EU:'Европ',AS:'Ази',AM:'Америк',OT:'Африк'}[r]||r; }
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
+async function loadMap(){
+  try {
+    const resp = await fetch('worldHigh.svg');
+    if(!resp.ok) throw new Error('not found');
+    const doc = new DOMParser().parseFromString(await resp.text(),'image/svg+xml');
+    const remote = doc.querySelector('svg');
+    if(!remote) return;
+    const host = document.getElementById('map-svg');
+    const vb = remote.getAttribute('viewBox');
+    if(vb) host.setAttribute('viewBox', vb);
+    remote.childNodes.forEach(n => host.appendChild(document.importNode(n,true)));
+
+    // Add land class and click handlers (attach to all ids so clicks always work)
+    host.querySelectorAll('[id]').forEach(el => {
+      el.classList.add('land');
+      const uid = (el.id||'').toUpperCase();
+      if(partnerIds.has(uid)){
+        el.classList.add('has-data');
+        // attach click handler only for countries that have data
+        el.addEventListener('click', (ev) => { ev.stopPropagation(); console.debug('map click', uid); toggleMapCountry(uid); });
+      } else {
+        // make non-partner countries non-interactive (use attributes to avoid el.style issues)
+        const prev = el.getAttribute('style') || '';
+        el.setAttribute('style', prev + ';cursor:default;pointer-events:none;');
+      }
+    });
+    syncMapSelection();
+  } catch(e){ console.warn('Map SVG load failed:',e); }
+}
+
+function getMapEl(uid){
+  // find element whose id matches uid case-insensitively
+  return document.querySelector(`[id="${uid}"]`)
+      || document.querySelector(`[id="${uid.toLowerCase()}"]`)
+      || Array.from(document.querySelectorAll('[id]')).find(e=>e.id.toUpperCase()===uid);
+}
+
+function toggleMapCountry(uid){
+  const el = getMapEl(uid);
+  if(!el) return;
+  if(activeMapIds.has(uid)){
+    activeMapIds.delete(uid);
+    el.classList.remove('map-on');
+  } else {
+    activeMapIds.add(uid);
+    el.classList.add('map-on');
+  }
+  updatePills();
+  render();
+}
+
+function syncMapSelection(){
+  // Keep blue only for explicit selections
+  document.querySelectorAll('#map-svg .land.map-on').forEach(el => {
+    const uid = (el.id || '').toUpperCase();
+    if (!activeMapIds.has(uid)) el.classList.remove('map-on');
+  });
+  activeMapIds.forEach(uid => {
+    const el = getMapEl(uid);
+    if (el) el.classList.add('map-on');
+  });
+}
+
+function updateMapHighlights(data){
+  // Light-highlight filtered countries without affecting explicit selections
+  document.querySelectorAll('#map-svg .land.map-highlight').forEach(el => el.classList.remove('map-highlight'));
+  const ids = new Set(data.map(d => (d.svgId || '').toUpperCase()));
+  ids.forEach(uid => {
+    if (!uid) return;
+    const el = getMapEl(uid);
+    if (!el || activeMapIds.has(uid)) return;
+    el.classList.add('map-highlight');
+  });
+  
+}
+
+function updatePills(){
+  const container = document.getElementById('map-filters');
+  let hint = document.getElementById('map-hint');
+  // If the hint element was removed or is missing, recreate a safe fallback
+  if(!hint){
+    hint = document.createElement('span');
+    hint.id = 'map-hint';
+    hint.className = 'map-hint';
+    hint.textContent = 'Газрын зурган дээр улс дарж шүүх';
+  }
+  container.innerHTML = '';
+  if(!activeMapIds.size){
+    container.appendChild(hint);
+    hint.style.display = '';
+    return;
+  }
+  hint.style.display = 'none';
+  activeMapIds.forEach(uid => {
+    const names = [...new Set(RAW.filter(d=>d.svgId.toUpperCase()===uid).map(d=>d.country))].join(' / ');
+    const pill = document.createElement('span');
+    pill.className = 'map-pill';
+    pill.innerHTML = names + ' <span class="x">✕</span>';
+    pill.addEventListener('click', () => toggleMapCountry(uid));
+    container.appendChild(pill);
+  });
+}
+
+// ── TABLE RENDER ──────────────────────────────────────────────────────────────
+function render(){
+  const q  = document.getElementById('search').value.toLowerCase();
+  const rg = document.getElementById('reg-filter').value;
+  const tp = document.getElementById('type-filter').value;
+
+  let data;
+  if (activeMapIds.size) {
+    // When map selections exist, show only those (ignore other filters)
+    data = RAW.filter(d => activeMapIds.has(d.svgId.toUpperCase()));
+  } else {
+    data = RAW.filter(d => {
+      if(q && !d.org.toLowerCase().includes(q) && !d.country.toLowerCase().includes(q)) return false;
+      if(rg && regCode(d.reg) !== rg) return false;
+      if(tp && !d.type.includes(tp)) return false;
+      return true;
+    });
+  }
+
+  if(sortKey==='date') data.sort((a,b)=>sortDir*(a.date>b.date?1:-1));
+  
+  syncMapSelection();
+  updateMapHighlights(data);
+
+  const tb = document.getElementById('tbody');
+  if(!data.length){
+    tb.innerHTML='<tr><td colspan="6" class="empty">Илэрц олдсонгүй</td></tr>';
+    updateStats([]);
+    return;
+  }
+
+  tb.innerHTML = data.map((d,i) => `
+    <tr onclick="selectRow(${d.n})" class="${selIdx===d.n?'sel':''}">
+      <td class="num">${i+1}</td>
+      <td title="${d.country}">${d.country}</td>
+      <td title="${d.org}">${d.org}</td>
+      <td><span class="reg-pill reg-${regCode(d.reg)}">${regLabel(regCode(d.reg))}</span></td>
+      <td class="num">${d.date}</td>
+      <td title="${d.type}">${d.type}</td>
+    </tr>`).join('');
+
+  updateStats(data);
+}
+
+function updateStats(data){
+  const elTotal = document.getElementById('s-total');
+  const elCountries = document.getElementById('s-countries');
+  if (elTotal) elTotal.textContent = data.length;
+  if (elCountries) elCountries.textContent = new Set(data.map(d=>d.svgId)).size;
+  const elEu = document.getElementById('s-eu');
+  const elAs = document.getElementById('s-as');
+  const elAm = document.getElementById('s-am');
+  const elOt = document.getElementById('s-ot');
+  if (elEu) elEu.textContent = data.filter(d=>regCode(d.reg)==='EU').length;
+  if (elAs) elAs.textContent = data.filter(d=>regCode(d.reg)==='AS').length;
+  if (elAm) elAm.textContent = data.filter(d=>regCode(d.reg)==='AM').length;
+  if (elOt) elOt.textContent = data.filter(d=>regCode(d.reg)==='OT').length;
+}
+
+// When the region filter changes, select all countries that match that region
+function handleRegChange(e){
+  const val = (e && e.target && e.target.value) || document.getElementById('reg-filter').value;
+  const code = regCode(val);
+  if(!code){
+    // clear selections when choosing "Бүх бүс нутаг"
+    activeMapIds.clear();
+    updatePills();
+    render();
+    return;
+  }
+  // collect unique svgIds for rows matching the region code
+  const ids = new Set(RAW.filter(d=>regCode(d.reg)===code).map(d=> (d.svgId||'').toUpperCase()).filter(Boolean));
+  activeMapIds.clear();
+  ids.forEach(id => activeMapIds.add(id));
+  updatePills();
+  render();
+}
+
+// ── DETAIL PANEL ──────────────────────────────────────────────────────────────
+function selectRow(n){
+  if(selIdx===n){ closeDetail(); return; }
+  selIdx = n;
+  const d = RAW.find(r=>r.n===n);
+  document.getElementById('d-name').textContent     = d.org;
+  document.getElementById('d-country').textContent  = d.country;
+  document.getElementById('d-date').textContent     = d.date;
+  document.getElementById('d-type').textContent     = d.type;
+  document.getElementById('d-reg').textContent      = regLabel(regCode(d.reg));
+  document.getElementById('d-country2').textContent = d.country;
+  document.getElementById('detail').className       = 'detail show';
+  render();
+}
+
+function closeDetail(){
+  selIdx = null;
+  document.getElementById('detail').className = 'detail';
+  render();
+}
+
+function sortBy(k){
+  if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
+  document.getElementById('si-date').textContent = sortDir===1?'↑':'↓';
+  render();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('reg-filter').addEventListener('change', handleRegChange);
+document.getElementById('type-filter').addEventListener('change', render);
+document.getElementById('si-date').addEventListener('click', () => sortBy('date'));
+render();       // show table immediately
+loadMap();      // load map in background (no .then needed)
+</script>
+</body>
+</html>
