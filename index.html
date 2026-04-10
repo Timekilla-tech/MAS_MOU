@@ -330,6 +330,47 @@ function regCode(r){
 
 function regLabel(r){ return {EU:'Европ',AS:'Ази',AM:'Америк',OT:'Африк'}[r]||r; }
 
+function countryNameForUid(uid){
+  if(!uid) return '';
+  const found = RAW.find(d=> (d.svgId||'').toUpperCase() === uid.toUpperCase());
+  return found ? found.country : '';
+}
+
+function regLabelForUid(uid){
+  if(!uid) return '';
+  const found = RAW.find(d=> (d.svgId||'').toUpperCase() === uid.toUpperCase());
+  return found ? regLabel(regCode(found.reg)) : '';
+}
+
+function showMapHint(text){
+  // create or reuse a floating tooltip positioned next to the mouse cursor
+  let tip = document.getElementById('map-tooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'map-tooltip';
+    tip.style.position = 'fixed';
+    tip.style.pointerEvents = 'none';
+    tip.style.zIndex = 9999;
+    tip.style.background = 'rgba(0,0,0,0.8)';
+    tip.style.color = '#fff';
+    tip.style.padding = '6px 8px';
+    tip.style.borderRadius = '6px';
+    tip.style.fontSize = '12px';
+    tip.style.fontFamily = 'var(--font)';
+    tip.style.display = 'none';
+    document.body.appendChild(tip);
+  }
+  tip.textContent = text || '';
+  tip.style.display = text ? '' : 'none';
+}
+
+function restoreMapHint(){
+  // hide floating tooltip and re-render pills in the map-filters area
+  const tip = document.getElementById('map-tooltip');
+  if (tip) tip.style.display = 'none';
+  updatePills();
+}
+
 // ── MAP ───────────────────────────────────────────────────────────────────────
 async function loadMap(){
   try {
@@ -347,6 +388,21 @@ async function loadMap(){
     host.querySelectorAll('[id]').forEach(el => {
       el.classList.add('land');
       const uid = (el.id||'').toUpperCase();
+
+      // show region (legend) label for this country in the map hint when hovering
+      el.addEventListener('mouseenter', (ev) => {
+        ev.stopPropagation();
+        // show country name in floating tooltip
+        showMapHint(countryNameForUid(uid));
+        const tip = document.getElementById('map-tooltip');
+        if(tip){ tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
+      });
+      el.addEventListener('mouseleave', (ev) => {
+        ev.stopPropagation();
+        // hide tooltip and restore pills/hint state
+        restoreMapHint();
+      });
+
       if(partnerIds.has(uid)){
         el.classList.add('has-data');
         // attach click handler only for countries that have data
@@ -363,6 +419,24 @@ async function loadMap(){
       }
     });
     syncMapSelection();
+
+    // Add a robust hover fallback: on mousemove find the element under cursor
+    // and show its country name in the hint. This helps when SVG groups/parents
+    // intercept pointer events or IDs are nested.
+    host.addEventListener('mousemove', (ev) => {
+      const el = document.elementFromPoint(ev.clientX, ev.clientY);
+      if(!el) return;
+      let node = el;
+      // climb until we find an element with an id or reach the host svg
+      while(node && node !== host && !node.id) node = node.parentNode;
+      if(node && node.id){
+        // show country name for hovered element
+        showMapHint(countryNameForUid(node.id));
+        const tip = document.getElementById('map-tooltip');
+        if(tip){ tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
+      }
+    });
+    host.addEventListener('mouseleave', () => restoreMapHint());
   } catch(e){ console.warn('Map SVG load failed:',e); }
 }
 
