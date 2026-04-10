@@ -563,6 +563,10 @@ document.getElementById('search').addEventListener('input', render);
 document.getElementById('reg-filter').addEventListener('change', handleRegChange);
 document.getElementById('type-filter').addEventListener('change', render);
 document.getElementById('si-date').addEventListener('click', () => sortBy('date'));
+// Initially activate all partner countries so the map behaves
+// as if a region was selected on first load.
+activeMapIds = new Set(partnerIds);
+updatePills();
 render();       // show table immediately
 loadMap();      // load map in background (no .then needed)
 </script>
