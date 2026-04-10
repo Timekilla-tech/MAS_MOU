@@ -456,7 +456,8 @@ function updateTypeFilter(data){
 // ── TABLE RENDER ──────────────────────────────────────────────────────────────
 function render(){
   const q  = document.getElementById('search').value.toLowerCase();
-  const rg = document.getElementById('reg-filter').value;
+  // normalize region select value to canonical code (EU/AS/AM/OT)
+  const rg = regCode(document.getElementById('reg-filter').value);
   const tp = document.getElementById('type-filter').value;
 
   let data;
