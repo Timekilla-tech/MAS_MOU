@@ -39,6 +39,7 @@
   --r-md:8px; --r-lg:12px;
   --font: 'DM Sans', sans-serif;
   --ui-font: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
+}
 #page-root{max-width:960px;margin:0 auto;padding:1.25rem}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:1.25rem;max-width:960px;margin:0 auto;}
 #map-svg{display:block;width:100%;height:auto;border-radius:var(--r-lg);background:#eeeee8;margin-bottom:.5rem;border:0.5px solid var(--border);}
@@ -600,7 +601,7 @@ function render(){
   }
 
   tb.innerHTML = data.map((d,i) => `
-    <tr onclick="selectRow(${d.n})" class="${selIdx===d.n?'sel':''}">
+    <tr data-n="${d.n}" onclick="selectRow(${d.n})" class="${selIdx===d.n?'sel':''}">
       <td class="num">${i+1}</td>
       <td title="${d.country}">${d.country}</td>
       <td title="${d.org}">${d.org}</td>
@@ -653,20 +654,59 @@ function handleRegChange(e){
 function selectRow(n){
   if(selIdx===n){ closeDetail(); return; }
   selIdx = n;
-  const d = RAW.find(r=>r.n===n);
-  document.getElementById('d-name').textContent     = d.org;
-  document.getElementById('d-country').textContent  = d.country;
-  document.getElementById('d-date').textContent     = d.date;
-  document.getElementById('d-type').textContent     = d.type;
-  document.getElementById('d-reg').textContent      = regLabel(regCode(d.reg));
-  document.getElementById('d-country2').textContent = d.country;
-  document.getElementById('detail').className       = 'detail show';
+  // Re-render table to ensure the selected row has .sel class
   render();
+  const d = RAW.find(r=>r.n===n);
+  // remove any existing inline detail row
+  const prevInline = document.getElementById('inline-detail-row');
+  if(prevInline) prevInline.remove();
+  // find the rendered table row for this item
+  const tr = document.querySelector(`#tbody tr[data-n="${n}"]`);
+  if(tr){
+    const row = document.createElement('tr');
+    row.id = 'inline-detail-row';
+    const td = document.createElement('td');
+    td.colSpan = 6;
+    td.innerHTML = `
+      <div class="detail show">
+        <div class="detail-header">
+          <div>
+            <div class="detail-title">${escapeHtml(d.org)}</div>
+            <div class="detail-sub">${escapeHtml(d.country)}</div>
+          </div>
+          <button class="close-btn" onclick="closeDetail()">Хаах ✕</button>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-row"><span class="detail-label">Огноо</span><span class="detail-val">${escapeHtml(d.date)}</span></div>
+          <div class="detail-row"><span class="detail-label">Төрөл</span><span class="detail-val">${escapeHtml(d.type)}</span></div>
+          <div class="detail-row"><span class="detail-label">Бүс нутаг</span><span class="detail-val">${escapeHtml(regLabel(regCode(d.reg)))}</span></div>
+          <div class="detail-row"><span class="detail-label">Улс</span><span class="detail-val">${escapeHtml(d.country)}</span></div>
+        </div>
+      </div>`;
+    row.appendChild(td);
+    tr.parentNode.insertBefore(row, tr.nextSibling);
+    // ensure the global detail is hidden to avoid duplicate content
+    const global = document.getElementById('detail'); if(global) global.className = 'detail';
+  } else {
+    // fallback: populate global detail panel if row not found
+    if(d){
+      document.getElementById('d-name').textContent     = d.org;
+      document.getElementById('d-country').textContent  = d.country;
+      document.getElementById('d-date').textContent     = d.date;
+      document.getElementById('d-type').textContent     = d.type;
+      document.getElementById('d-reg').textContent      = regLabel(regCode(d.reg));
+      document.getElementById('d-country2').textContent = d.country;
+      document.getElementById('detail').className       = 'detail show';
+    }
+  }
 }
 
 function closeDetail(){
   selIdx = null;
-  document.getElementById('detail').className = 'detail';
+  // remove inline detail row if present
+  const prevInline = document.getElementById('inline-detail-row');
+  if(prevInline) prevInline.remove();
+  const global = document.getElementById('detail'); if(global) global.className = 'detail';
   render();
 }
 
