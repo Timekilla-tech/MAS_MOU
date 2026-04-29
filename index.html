@@ -1,738 +1,756 @@
-<!DOCTYPE html>
-<html lang="mn">
-<head>
-<meta charset="UTF-8">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ШУА-ийн гадаад хамтын ажиллагаа</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <!DOCTYPE html>
+  <html lang="mn">
+  <head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ШУА-ийн гадаад хамтын ажиллагаа</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  /* Slate palette */
-  --slate-50: #f8fafc;
-  --slate-100: #f1f5f9;
-  --slate-200: #e2e8f0;
-  --slate-400: #94a3b8;
-  --slate-500: #64748b;
-  --slate-700: #334155;
-  --slate-900: #0f172a;
+  :root {
+    /* Slate palette */
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-700: #334155;
+    --slate-900: #0f172a;
 
-  /* Blues & cards */
-  --blue-dark: #1a3660;
-  --blue-mid: #2d4a7a;
-  --blue-pale: #eef2f8;
-  --card-border: #dde3ec;
-  --card-hover: #b8c9e0;
+    /* Blues & cards */
+    --blue-dark: #1a3660;
+    --blue-mid: #2d4a7a;
+    --blue-pale: #eef2f8;
+    --card-border: #dde3ec;
+    --card-hover: #b8c9e0;
 
-  /* Semantic mappings used by the app */
-  --bg: #f0f4f8; /* page body background */
-  --bg-sec: var(--blue-pale);
-  --bg-info: var(--blue-pale);
-  --text: var(--slate-900);
-  --text-sec: var(--slate-500);
-  --text-info: #4a6fa5; /* badge / icon color */
-  --border: var(--card-border);
-  --border-sec: #cdd5e0;
+    /* Semantic mappings used by the app */
+    --bg: #f0f4f8; /* page body background */
+    --bg-sec: var(--blue-pale);
+    --bg-info: var(--blue-pale);
+    --text: var(--slate-900);
+    --text-sec: var(--slate-500);
+    --text-info: #4a6fa5; /* badge / icon color */
+    --border: var(--card-border);
+    --border-sec: #cdd5e0;
 
-  --r-md:8px; --r-lg:12px;
-  --font: 'DM Sans', sans-serif;
-  --ui-font: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
-}
-#page-root{max-width:960px;margin:0 auto;padding:1.25rem}
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:1.25rem;max-width:960px;margin:0 auto;}
-#map-svg{display:block;width:100%;height:auto;border-radius:var(--r-lg);background:#eeeee8;margin-bottom:.5rem;border:0.5px solid var(--border);}
-.land{fill:#c8c8c4;stroke:#fff;stroke-width:.3;transition:fill .2s;}
-.land.has-data{fill:#9FE1CB;cursor:pointer;}
-.land.has-data:hover{fill:#5DCAA5;}
-.land.map-on{fill:#378ADD!important;stroke:#185FA5;}
-.land.map-highlight{fill:yellow;stroke:#A9CFF6;}
-.legend{display:flex;gap:16px;font-size:12px;color:var(--text-sec);margin-bottom:.75rem;align-items:center;flex-wrap:wrap;}
-.leg-dot{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:4px;vertical-align:middle;}
-.map-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;min-height:26px;}
-.map-pill{font-size:12px;padding:3px 10px 3px 12px;border-radius:20px;background:#E6F1FB;color:#0C447C;cursor:pointer;border:1px solid #B5D4F4;display:flex;align-items:center;gap:6px;font-family:var(--font);}
-.map-pill .x{opacity:.55;font-size:11px;}
-.map-pill:hover .x{opacity:1;}
-.map-hint{font-size:12px;color:var(--text-sec);}
-.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:1.25rem;}
-.topbar h1{font-size:20px;font-weight:600;color:var(--text);font-family:var(--ui-font);}
-.badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:var(--bg-info);color:var(--text-info);font-family:var(--ui-font);border:1px solid var(--border-sec)}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
-@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat{background:var(--bg-sec);border-radius:var(--r-md);padding:14px 16px;}
-.stat-n{font-size:26px;font-weight:500;color:var(--text);line-height:1;}
-.stat-l{font-size:12px;color:var(--text-sec);margin-top:4px;}
-.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;align-items:center;}
-input[type="text"],select{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--text);border:0.5px solid var(--border-sec);border-radius:var(--r-md);padding:8px 12px;outline:none;transition:border-color .15s;}
-input[type="text"]{flex:1;min-width:200px;}
-select{min-width:140px;cursor:pointer;}
-input[type="text"]:focus,select:focus{border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,.15);}
-.tbl-wrap{border:0.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;overflow-x:auto;}
-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;min-width:600px;}
-thead th{background:var(--bg-sec);padding:10px 14px;text-align:left;font-weight:500;color:var(--text-sec);font-size:12px;border-bottom:0.5px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-th.sort{cursor:pointer;user-select:none;}
-th.sort:hover{color:var(--text);}
-.sort-ind{margin-left:4px;opacity:.5;}
-tbody tr{border-bottom:0.5px solid var(--border);cursor:pointer;transition:background .12s;}
-tbody tr:last-child{border-bottom:none;}
-tbody tr:hover{background:var(--bg-sec);}
-tbody tr.sel{background:#E6F1FB;}
-td{padding:10px 14px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-td.num{color:var(--text-sec);font-size:12px;}
-.reg-pill{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block;white-space:nowrap;}
-.reg-EU{background:#EEEDFE;color:#3C3489;}
-.reg-AS{background:#E1F5EE;color:#085041;}
-.reg-AM{background:#FAECE7;color:#712B13;}
-.reg-OT{background:#F1EFE8;color:#444441;}
-.empty{text-align:center;padding:2.5rem;color:var(--text-sec);font-size:13px;}
-.detail{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:1.25rem 1.5rem;margin-top:1rem;display:none;}
-.detail.show{display:block;}
-.detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
-.detail-title{font-size:15px;font-weight:500;color:var(--text);}
-.detail-sub{font-size:12px;color:var(--text-sec);margin-top:3px;}
-.close-btn{font-size:12px;color:var(--text-sec);cursor:pointer;border:0.5px solid var(--border-sec);border-radius:6px;padding:4px 10px;background:transparent;font-family:var(--font);transition:background .12s;flex-shrink:0;}
-.close-btn:hover{background:var(--bg-sec);}
-.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:0.5px solid var(--border);padding-top:12px;}
-.detail-row{display:flex;flex-direction:column;gap:3px;}
-.detail-label{font-size:11px;color:var(--text-sec);}
-.detail-val{font-size:14px;color:var(--text);font-weight:500;white-space:normal;line-height:1.4;}
-footer{margin-top:2rem;font-size:12px;color:var(--text-sec);text-align:center;}
-</style>
-</head>
-<body>
+    --r-md:8px; --r-lg:12px;
+    --font: 'DM Sans', sans-serif;
+    --ui-font: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
+  }
+  #page-root{max-width:960px;margin:0 auto;padding:1.25rem}
+  #mou-root { max-width: 960px; margin: 0 auto; padding: 1.25rem; font-family: var(--font); }
+  #map-svg{display:block !important;width:100% !important;height:auto !important;border-radius:var(--r-lg);background:#eeeee8;margin-bottom:.5rem;border:0.5px solid var(--border);min-height:300px !important;} 
+  .land{fill:#c8c8c4;stroke:#fff;stroke-width:.3;transition:fill .2s;}
+  .land.has-data{fill:#9FE1CB;cursor:pointer;}
+  .land.has-data:hover{fill:#5DCAA5;}
+  .land.map-on{fill:#378ADD!important;stroke:#185FA5;}
+  .land.map-highlight{fill:yellow;stroke:#A9CFF6;}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--text-sec);margin-bottom:.75rem;align-items:center;flex-wrap:wrap;}
+  .leg-dot{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:4px;vertical-align:middle;}
+  .map-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;min-height:26px;}
+  .map-pill{font-size:12px;padding:3px 10px 3px 12px;border-radius:20px;background:#E6F1FB;color:#0C447C;cursor:pointer;border:1px solid #B5D4F4;display:flex;align-items:center;gap:6px;font-family:var(--font);}
+  .map-pill .x{opacity:.55;font-size:11px;}
+  .map-pill:hover .x{opacity:1;}
+  .map-hint{font-size:12px;color:var(--text-sec);}
+  .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:1.25rem;}
+  .topbar h1{font-size:20px;font-weight:600;color:var(--text);font-family:var(--ui-font);}
+  .badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:var(--bg-info);color:var(--text-info);font-family:var(--ui-font);border:1px solid var(--border-sec)}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
+  @media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--bg-sec);border-radius:var(--r-md);padding:14px 16px;}
+  .stat-n{font-size:26px;font-weight:500;color:var(--text);line-height:1;}
+  .stat-l{font-size:12px;color:var(--text-sec);margin-top:4px;}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;align-items:center;}
+  input[type="text"],select{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--text);border:0.5px solid var(--border-sec);border-radius:var(--r-md);padding:8px 12px;outline:none;transition:border-color .15s;}
+  input[type="text"]{flex:1;min-width:200px;}
+  select{min-width:140px;cursor:pointer;}
+  input[type="text"]:focus,select:focus{border-color:#378ADD;box-shadow:0 0 0 3px rgba(55,138,221,.15);}
+  .tbl-wrap{border:0.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;min-width:600px;}
+  thead th{background:var(--bg-sec);padding:10px 14px;text-align:left;font-weight:500;color:var(--text-sec);font-size:12px;border-bottom:0.5px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  th.sort{cursor:pointer;user-select:none;}
+  th.sort:hover{color:var(--text);}
+  .sort-ind{margin-left:4px;opacity:.5;}
+  tbody tr{border-bottom:0.5px solid var(--border);cursor:pointer;transition:background .12s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:var(--bg-sec);}
+  tbody tr.sel{background:#E6F1FB;}
+  td{padding:10px 14px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  td.num{color:var(--text-sec);font-size:12px;}
+  .reg-pill{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block;white-space:nowrap;}
+  .reg-EU{background:#EEEDFE;color:#3C3489;}
+  .reg-AS{background:#E1F5EE;color:#085041;}
+  .reg-AM{background:#FAECE7;color:#712B13;}
+  .reg-OT{background:#F1EFE8;color:#444441;}
+  .empty{text-align:center;padding:2.5rem;color:var(--text-sec);font-size:13px;}
+  .detail{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:1.25rem 1.5rem;margin-top:1rem;display:none;}
+  .detail.show{display:block;}
+  .detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+  .detail-title{font-size:15px;font-weight:500;color:var(--text);}
+  .detail-sub{font-size:12px;color:var(--text-sec);margin-top:3px;}
+  .close-btn{font-size:12px;color:var(--text-sec);cursor:pointer;border:0.5px solid var(--border-sec);border-radius:6px;padding:4px 10px;background:transparent;font-family:var(--font);transition:background .12s;flex-shrink:0;}
+  .close-btn:hover{background:var(--bg-sec);}
+  .detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:0.5px solid var(--border);padding-top:12px;}
+  .detail-row{display:flex;flex-direction:column;gap:3px;}
+  .detail-label{font-size:11px;color:var(--text-sec);}
+  .detail-val{font-size:14px;color:var(--text);font-weight:500;white-space:normal;line-height:1.4;}
+  footer{margin-top:2rem;font-size:12px;color:var(--text-sec);text-align:center;}
+  #mou-root .tbl-wrap{overflow-x:auto !important}
+  #mou-root table{min-width:600px}
+  </style>
+  </head>
+  <body>
 
-<div class="topbar">
-  <h1>ШУА-ийн гадаад хамтын ажиллагаа</h1>
-  <span class="badge">Олон улсын гэрээ</span>
-</div>
+  <div id="mou-root">
 
-<svg id="map-svg" viewBox="0 0 1000 500"></svg>
+  <svg id="map-svg" viewBox="0 0 1000 500"></svg>
 
-<div class="legend">
-  <span><span class="leg-dot" style="background:#9FE1CB"></span>Гэрээтэй улс — дарж шүүх</span>
-  <span><span class="leg-dot" style="background:#378ADD"></span>Сонгосон</span>
-  <span><span class="leg-dot" style="background:#c8c8c4"></span>Гэрээгүй</span>
-</div>
+  <div class="legend">
+    <span><span class="leg-dot" style="background:#9FE1CB"></span>Гэрээтэй улс — дарж шүүх</span>
+    <span><span class="leg-dot" style="background:#378ADD"></span>Сонгосон</span>
+    <span><span class="leg-dot" style="background:#c8c8c4"></span>Гэрээгүй</span>
+    <span><span class="leg-dot" style="background:#378ADD"></span></span>
+    <button id="btn-select-all" class="map-pill" onclick="selectAllMap()" title="Select all partners">Бүгдийг сонгох</button>
+    <button style="background:#c8c8c4" id="btn-clear-selection" class="map-pill" onclick="clearMapSelection()" title="Clear selection">Сонголтуудыг арилгах</button>
+  </div>
 
-<div class="map-filters" id="map-filters">
-  <span class="map-hint" id="map-hint">Газрын зурган дээр улс дарж шүүх</span>
-</div>
-
-<div class="stats">
-  <div class="stat"><div class="stat-n" id="s-total">0</div><div class="stat-l">Нийт гэрээ</div></div>
-  <div class="stat"><div class="stat-n" id="s-countries">0</div><div class="stat-l">Улс орон</div></div>
-</div>
-
-<div class="filters">
-  <input type="text" id="map-search" placeholder="Байгууллага хайх...">
-  <select id="reg-filter">
-    <option value="">Бүх бүс нутаг</option>
-    <option value="Европ">Европ</option>
-    <option value="Ази">Ази</option>
-    <option value="Америк">Америк</option>
-    <option value="Африк">Африк</option>
-  </select>
-  <select id="type-filter">
-    <option value="">Бүх төрөл</option>
-    <option value="Санамж бичиг">Санамж бичиг</option>
-    <option value="Төлөвлөгөө">Төлөвлөгөө</option>
-    <option value="Хэлэлцээр">Хэлэлцээр</option>
-    <option value="Протокол, Хэлэлцээр">Протокол, Хэлэлцээр</option>
-    <option value="Тохиролцоо">Тохиролцоо</option>
-    <option value="Гэрээ">Гэрээ</option>
-    <option value="Санамж бичигийн шинэчлэл">Санамж бичигийн шинэчлэл</option>
-    <option value="Хэлэлцээрийн төлөвлөгөө">Хэлэлцээрийн төлөвлөгөө</option>
-    <option value="Гишүүнчлэлийн хэлэлцээр">Гишүүнчлэлийн хэлэлцээр</option>
-    <option value="Төсөл санхүүжүүлэх гэрээ">Төсөл санхүүжүүлэх гэрээ</option>
-    <option value="Харилцан солилцоо хийх">Харилцан солилцоо хийх</option>
-    <option value="Agreement on Academic exchanges">Agreement on Academic exchanges</option>
-    <option value="joint statement">joint statement</option>
-    <option value="MOU">MOU</option>
-    <option value="Төслийн гэрээ">Төслийн гэрээ</option>
-    <option value="хөтөлбөр">хөтөлбөр</option>
-    <option value="Ном хэвлүүлэх гэрээ">Ном хэвлүүлэх гэрээ</option>
-    <option value="Протокол">Протокол</option>
-  </select>
-</div>
-
-<div class="tbl-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th style="width:42px">#</th>
-        <th style="width:18%">Улс</th>
-        <th style="width:33%">Байгууллага</th>
-        <th style="width:10%">Бүс</th>
-        <th class="sort" style="width:14%" onclick="sortBy('date')">Огноо <span class="sort-ind" id="si-date">↕</span></th>
-        <th style="width:18%">Төрөл</th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</div>
-
-<div class="detail" id="detail">
-  <div class="detail-header">
-    <div>
-      <div class="detail-title" id="d-name"></div>
-      <div class="detail-sub" id="d-country"></div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
+    <div class="map-filters" id="map-filters">
+      <span class="map-hint" id="map-hint">Газрын зурган дээр улс дарж шүүх</span>
     </div>
-    <button class="close-btn" onclick="closeDetail()">Хаах ✕</button>
   </div>
-  <div class="detail-grid">
-    <div class="detail-row"><span class="detail-label">Огноо</span><span class="detail-val" id="d-date"></span></div>
-    <div class="detail-row"><span class="detail-label">Төрөл</span><span class="detail-val" id="d-type"></span></div>
-    <div class="detail-row"><span class="detail-label">Бүс нутаг</span><span class="detail-val" id="d-reg"></span></div>
-    <div class="detail-row"><span class="detail-label">Улс</span><span class="detail-val" id="d-country2"></span></div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="s-total">0</div><div class="stat-l">Нийт гэрээ</div></div>
+    <div class="stat"><div class="stat-n" id="s-countries">0</div><div class="stat-l">Улс орон</div></div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/gh/Timekilla-tech/MAS_MOU@master/mou-data.js"></script>
-<script>
-  
-// ── RAW DATA (each row = one agreement) ──────────────────────────────────────
+  <div class="filters">
+    <input type="text" id="map-search" placeholder="Байгууллага хайх...">
+    <select id="reg-filter">
+      <option value="">Бүх бүс нутаг</option>
+      <option value="Европ">Европ</option>
+      <option value="Ази">Ази</option>
+      <option value="Америк">Америк</option>
+      <option value="Африк">Африк</option>
+    </select>
+    <select id="type-filter">
+      <option value="">Бүх төрөл</option>
+      <option value="Санамж бичиг">Санамж бичиг</option>
+      <option value="Төлөвлөгөө">Төлөвлөгөө</option>
+      <option value="Хэлэлцээр">Хэлэлцээр</option>
+      <option value="Протокол, Хэлэлцээр">Протокол, Хэлэлцээр</option>
+      <option value="Тохиролцоо">Тохиролцоо</option>
+      <option value="Гэрээ">Гэрээ</option>
+      <option value="Санамж бичигийн шинэчлэл">Санамж бичигийн шинэчлэл</option>
+      <option value="Хэлэлцээрийн төлөвлөгөө">Хэлэлцээрийн төлөвлөгөө</option>
+      <option value="Гишүүнчлэлийн хэлэлцээр">Гишүүнчлэлийн хэлэлцээр</option>
+      <option value="Төсөл санхүүжүүлэх гэрээ">Төсөл санхүүжүүлэх гэрээ</option>
+      <option value="Харилцан солилцоо хийх">Харилцан солилцоо хийх</option>
+      <option value="Agreement on Academic exchanges">Agreement on Academic exchanges</option>
+      <option value="joint statement">joint statement</option>
+      <option value="MOU">MOU</option>
+      <option value="Төслийн гэрээ">Төслийн гэрээ</option>
+      <option value="хөтөлбөр">хөтөлбөр</option>
+      <option value="Ном хэвлүүлэх гэрээ">Ном хэвлүүлэх гэрээ</option>
+      <option value="Протокол">Протокол</option>
+    </select>
+  </div>
 
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:42px">#</th>
+          <th style="width:18%">Улс</th>
+          <th style="width:33%">Байгууллага</th>
+          <th style="width:10%">Бүс</th>
+          <th class="sort" style="width:14%" onclick="sortBy('date')">Огноо <span class="sort-ind" id="si-date">↕</span></th>
+          <th style="width:18%">Төрөл</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
 
-// ── STATE ────────────────────────────────────────────────────────────────────
-const partnerIds = new Set(RAW.map(d => d.svgId.toUpperCase()));
-let sortDir = 1, sortKey = null, selIdx = null;
-let activeMapIds = new Set(); // stores UPPERCASE svgId strings
-let mapOverride = false; // when true, activeMapIds fully override other filters (set when user clicks map)
+  <div class="detail" id="detail">
+    <div class="detail-header">
+      <div>
+        <div class="detail-title" id="d-name"></div>
+        <div class="detail-sub" id="d-country"></div>
+      </div>
+      <button class="close-btn" onclick="closeDetail()">Хаах ✕</button>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-row"><span class="detail-label">Огноо</span><span class="detail-val" id="d-date"></span></div>
+      <div class="detail-row"><span class="detail-label">Төрөл</span><span class="detail-val" id="d-type"></span></div>
+      <div class="detail-row"><span class="detail-label">Бүс нутаг</span><span class="detail-val" id="d-reg"></span></div>
+      <div class="detail-row"><span class="detail-label">Улс</span><span class="detail-val" id="d-country2"></span></div>
+    </div>
+  </div>
 
-function regCode(r){
-  if (!r && r !== '') return '';
-  const s = String(r).trim();
-  if (!s) return '';
-  const up = s.toUpperCase();
-  if (up === 'EU' || up === 'ЕВРОП' || s === 'Европ') return 'EU';
-  if (up === 'AS' || up === 'АЗИ' || s === 'Ази') return 'AS';
-  if (up === 'AM' || up === 'АМЕРИК' || s === 'Америк') return 'AM';
-  if (up === 'OT' || up === 'АФРИК' || s === 'Африк' || s === 'Бусад') return 'OT';
-  // already a short code?
-  if (['EU','AS','AM','OT'].includes(up)) return up;
-  return s;
-}
+  </div>
 
-function regLabel(r){ return {EU:'Европ',AS:'Ази',AM:'Америк',OT:'Африк'}[r]||r; }
+  <script src="https://cdn.jsdelivr.net/gh/Timekilla-tech/MAS_MOU@master/mou-data.js"></script>
+  <script>
+  // ── STATE ────────────────────────────────────────────────────────────────────
+  const partnerIds = new Set(RAW.map(d => d.svgId.toUpperCase()));
+  let sortDir = 1, sortKey = null, selIdx = null;
+  let activeMapIds = new Set(); // stores UPPERCASE svgId strings
+  let mapOverride = false; // when true, activeMapIds fully override other filters (set when user clicks map)
 
-function countryNameForUid(uid){
-  if(!uid) return '';
-  const found = RAW.find(d=> (d.svgId||'').toUpperCase() === uid.toUpperCase());
-  return found ? found.country : '';
-}
-
-function regLabelForUid(uid){
-  if(!uid) return '';
-  const found = RAW.find(d=> (d.svgId||'').toUpperCase() === uid.toUpperCase());
-  return found ? regLabel(regCode(found.reg)) : '';
-}
-
-function showMapHint(text){
-  // create or reuse a floating tooltip positioned next to the mouse cursor
-  let tip = document.getElementById('map-tooltip');
-  if (!tip) {
-    tip = document.createElement('div');
-    tip.id = 'map-tooltip';
-    tip.style.position = 'fixed';
-    tip.style.pointerEvents = 'none';
-    tip.style.zIndex = 9999;
-    tip.style.background = 'rgba(0,0,0,0.8)';
-    tip.style.color = '#fff';
-    tip.style.padding = '6px 8px';
-    tip.style.borderRadius = '6px';
-    tip.style.fontSize = '12px';
-    tip.style.fontFamily = 'var(--font)';
-    tip.style.display = 'none';
-    document.body.appendChild(tip);
+  function regCode(r){
+    if (!r && r !== '') return '';
+    const s = String(r).trim();
+    if (!s) return '';
+    const up = s.toUpperCase();
+    if (up === 'EU' || up === 'ЕВРОП' || s === 'Европ') return 'EU';
+    if (up === 'AS' || up === 'АЗИ' || s === 'Ази') return 'AS';
+    if (up === 'AM' || up === 'АМЕРИК' || s === 'Америк') return 'AM';
+    if (up === 'OT' || up === 'АФРИК' || s === 'Африк' || s === 'Бусад') return 'OT';
+    // already a short code?
+    if (['EU','AS','AM','OT'].includes(up)) return up;
+    return s;
   }
-  tip.textContent = text || '';
-  tip.style.display = text ? '' : 'none';f
-}
 
-function restoreMapHint(){
-  // hide floating tooltip and re-render pills in the map-filters area
-  const tip = document.getElementById('map-tooltip');
-  if (tip) tip.style.display = 'none';
-  updatePills();
-}
+  function regLabel(r){ return {EU:'Европ',AS:'Ази',AM:'Америк',OT:'Африк'}[r]||r; }
 
-// ── MAP ───────────────────────────────────────────────────────────────────────
-async function loadMap(){
-  render();
-  try {
-    // try local copy first, fallback to CDN
-    let resp;
-    try {
-      resp = await fetch('worldHigh.svg');
-      if(!resp.ok) throw new Error('local not found');
-    } catch(errLocal) {
-      console.warn('Local worldHigh.svg not found, fetching CDN...', errLocal);
-      resp = await fetch('https://cdn.jsdelivr.net/gh/Timekilla-tech/MAS_MOU@master/worldHigh.svg');
-      if(!resp.ok) throw new Error('CDN fetch failed');
+  function countryNameForUid(uid){
+    if(!uid) return '';
+    const found = RAW.find(d=> (d.svgId||'').toUpperCase() === uid.toUpperCase());
+    return found ? found.country : '';
+  }
+
+  function regLabelForUid(uid){
+    if(!uid) return '';
+    const found = RAW.find(d=> (d.svgId||'').toUpperCase() === uid.toUpperCase());
+    return found ? regLabel(regCode(found.reg)) : '';
+  }
+
+  function showMapHint(text){
+    // create or reuse a floating tooltip positioned next to the mouse cursor
+    let tip = document.getElementById('map-tooltip');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.id = 'map-tooltip';
+      tip.style.position = 'fixed';
+      tip.style.pointerEvents = 'none';
+      tip.style.zIndex = 9999;
+      tip.style.background = 'rgba(0,0,0,0.8)';
+      tip.style.color = '#fff';
+      tip.style.padding = '6px 8px';
+      tip.style.borderRadius = '6px';
+      tip.style.fontSize = '12px';
+      tip.style.fontFamily = 'var(--font)';
+      tip.style.display = 'none';
+      document.body.appendChild(tip);
     }
-    const doc = new DOMParser().parseFromString(await resp.text(),'image/svg+xml');
-    const remote = doc.querySelector('svg');
-    if(!remote) return;
-    const host = document.getElementById('map-svg');
-    const vb = remote.getAttribute('viewBox');
-    if(vb) host.setAttribute('viewBox', vb);
-    remote.childNodes.forEach(n => host.appendChild(document.importNode(n,true)));
-
-    // Add land class and click handlers (attach to all ids so clicks always work)
-    host.querySelectorAll('[id]').forEach(el => {
-      el.classList.add('land');
-      const uid = (el.id||'').toUpperCase();
-
-      // show region (legend) label for this country in the map hint when hovering
-      el.addEventListener('mouseenter', (ev) => {
-        ev.stopPropagation();
-        // show country name in floating tooltip
-        showMapHint(countryNameForUid(uid));
-        const tip = document.getElementById('map-tooltip');
-        if(tip){ tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
-      });
-      el.addEventListener('mouseleave', (ev) => {
-        ev.stopPropagation();
-        // hide tooltip and restore pills/hint state
-        restoreMapHint();
-      });
-
-      if(partnerIds.has(uid)){
-        el.classList.add('has-data');
-        // attach click handler only for countries that have data
-        el.addEventListener('click', (ev) => { ev.stopPropagation(); console.debug('map click', uid); toggleMapCountry(uid); });
-      } else {
-        // Do not disable pointer events on parent/group elements that contain
-        // child elements which themselves are partner shapes. Disabling pointer
-        // events on a container would make its children non-interactive.
-        const hasPartnerDescendant = Array.from(el.querySelectorAll('[id]')).some(ch => partnerIds.has((ch.id||'').toUpperCase()));
-        if (!hasPartnerDescendant) {
-          const prev = el.getAttribute('style') || '';
-          el.setAttribute('style', prev + ';cursor:default;pointer-events:none;');
-        }
-      }
-    });
-    syncMapSelection();
-
-    // Add a robust hover fallback: on mousemove find the element under cursor
-    // and show its country name in the hint. This helps when SVG groups/parents
-    // intercept pointer events or IDs are nested.
-    host.addEventListener('mousemove', (ev) => {
-      const el = document.elementFromPoint(ev.clientX, ev.clientY);
-      if(!el) return;
-      let node = el;
-      // climb until we find an element with an id or reach the host svg
-      while(node && node !== host && !node.id) node = node.parentNode;
-      if(node && node.id){
-        // show country name for hovered element
-        showMapHint(countryNameForUid(node.id));
-        const tip = document.getElementById('map-tooltip');
-        if(tip){ tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
-      }
-    });
-    host.addEventListener('mouseleave', () => restoreMapHint());
-    host.addEventListener('type', () => restoreMapHint());
-  } catch(e){ console.warn('Map SVG load failed:',e); }
-}
-
-function getMapEl(uid){
-  // find element whose id matches uid case-insensitively
-  return document.querySelector(`[id="${uid}"]`)
-      || document.querySelector(`[id="${uid.toLowerCase()}"]`)
-      || Array.from(document.querySelectorAll('[id]')).find(e=>e.id.toUpperCase()===uid);
-}
-
-function toggleMapCountry(uid){
-  const el = getMapEl(uid);
-  if(!el) return;
-  mapOverride = true;
-  if(activeMapIds.has(uid)){
-    activeMapIds.delete(uid);
-    el.classList.remove('map-on');
-  } else {
-    activeMapIds.add(uid);
-    el.classList.add('map-on');
-  }
-  updatePills();
-  render();
-}
-
-function syncMapSelection(){
-  // Keep blue only for explicit selections
-  document.querySelectorAll('#map-svg .land.map-on').forEach(el => {
-    const uid = (el.id || '').toUpperCase();
-    if (!activeMapIds.has(uid)) el.classList.remove('map-on');
-  });
-  activeMapIds.forEach(uid => {
-    const el = getMapEl(uid);
-    if (el) el.classList.add('map-on');
-  });
-}
-
-function updateMapHighlights(data){
-  // Light-highlight filtered countries without affecting explicit selections
-  document.querySelectorAll('#map-svg .land.map-highlight').forEach(el => el.classList.remove('map-highlight'));
-  const ids = new Set(data.map(d => (d.svgId || '').toUpperCase()));
-  ids.forEach(uid => {
-    if (!uid) return;
-    const el = getMapEl(uid);
-    if (!el || activeMapIds.has(uid)) return;
-    el.classList.add('map-highlight');
-  });
-  
-}
-
-function updatePills(){
-  const container = document.getElementById('map-filters');
-  let hint = document.getElementById('map-hint');
-  // If the hint element was removed or is missing, recreate a safe fallback
-  if(!hint){
-    hint = document.createElement('span');
-    hint.id = 'map-hint';
-    hint.className = 'map-hint';
-    hint.textContent = 'Газрын зурган дээр улс дарж шүүх';
-  }
-  container.innerHTML = '';
-  if(!activeMapIds.size){
-    container.appendChild(hint);
-    hint.style.display = '';
-    return;
-  }
-  hint.style.display = 'none';
-  activeMapIds.forEach(uid => {
-    const names = [...new Set(RAW.filter(d=>d.svgId.toUpperCase()===uid).map(d=>d.country))].join(' / ');
-    const pill = document.createElement('span');
-    pill.className = 'map-pill';
-    pill.innerHTML = names + ' <span class="x">✕</span>';
-    pill.addEventListener('click', () => toggleMapCountry(uid));
-    container.appendChild(pill);
-  });
-}
-
-function escapeHtml(str){
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-// Rebuild the type-filter options based on the provided data set
-function updateTypeFilter(data){
-  const sel = document.getElementById('type-filter');
-  if(!sel) return;
-  const current = sel.value;
-  const types = Array.from(new Set(data.map(d=>d.type).filter(Boolean)));
-  // sort types for stability
-  types.sort((a,b)=>a.localeCompare(b));
-  let html = '<option value="">Бүх төрөл</option>' + types.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
-  sel.innerHTML = html;
-  // restore previous selection if still present
-  if(types.includes(current)) sel.value = current; else sel.value = '';
-}
-
-// ── TABLE RENDER ──────────────────────────────────────────────────────────────
-function render(){
-  const q  = (document.getElementById('map-search') && document.getElementById('map-search').value || '').toLowerCase();
-  // normalize region select value to canonical code (EU/AS/AM/OT)
-  const rg = regCode(document.getElementById('reg-filter').value);
-  const tp = document.getElementById('type-filter').value;
-
-  let data;
-  if (activeMapIds.size && mapOverride) {
-    // When the user explicitly selected countries on the map, filter the RAW
-    // rows to those countries but still apply search/region/type filters so
-    // the table respects the `type-filter`.
-    data = RAW.filter(d => {
-      if(!activeMapIds.has((d.svgId||'').toUpperCase())) return false;
-      if(q && !d.org.toLowerCase().includes(q) && !d.country.toLowerCase().includes(q)) return false;
-      if(rg && regCode(d.reg) !== rg) return false;
-      if(tp && !d.type.includes(tp)) return false;
-      return true;
-    });
-  } else {
-    // Normal filtering path: apply search, region and type filters together.
-    data = RAW.filter(d => {
-      if(q && !d.org.toLowerCase().includes(q) && !d.country.toLowerCase().includes(q)) return false;
-      if(rg && regCode(d.reg) !== rg) return false;
-      if(tp && !d.type.includes(tp)) return false;
-      return true;
-    });
+    tip.textContent = text || '';
+    tip.style.display = text ? '' : 'none';
   }
 
-  if(sortKey==='date') data.sort((a,b)=>sortDir*(a.date>b.date?1:-1));
-  
-  // If the user hasn't explicitly clicked the map (no override), make the
-  // map reflect the current filtered dataset (so type/reg filters update countries).
-  if(!mapOverride){
-    const ids = new Set(data.map(d => (d.svgId||'').toUpperCase()).filter(Boolean));
-    activeMapIds = ids;
+  function restoreMapHint(){
+    // hide floating tooltip and re-render pills in the map-filters area
+    const tip = document.getElementById('map-tooltip');
+    if (tip) tip.style.display = 'none';
     updatePills();
   }
 
-  syncMapSelection();
-  updateMapHighlights(data);
-  // refresh available types for the current visible dataset
-  updateTypeFilter(data);
+  // ── MAP ───────────────────────────────────────────────────────────────────────
+  async function loadMap(){
+    render();
+    try {
+      // try local copy first, fallback to CDN
+      let resp;
+      try {
+        resp = await fetch('worldHigh.svg');
+        if(!resp.ok) throw new Error('local not found');
+      } catch(errLocal) {
+        console.warn('Local worldHigh.svg not found, fetching CDN...', errLocal);
+        resp = await fetch('https://cdn.jsdelivr.net/gh/Timekilla-tech/MAS_MOU@master/worldHigh.svg');
+        if(!resp.ok) throw new Error('CDN fetch failed');
+      }
+      const doc = new DOMParser().parseFromString(await resp.text(),'image/svg+xml');
+      const remote = doc.querySelector('svg');
+      if(!remote) return;
+      const host = document.getElementById('map-svg');
+      const vb = remote.getAttribute('viewBox');
+      if(vb) host.setAttribute('viewBox', vb);
+      remote.childNodes.forEach(n => host.appendChild(document.importNode(n,true)));
 
-  const tb = document.getElementById('tbody');
-  if(!data.length){
-    tb.innerHTML='<tr><td colspan="6" class="empty">Илэрц олдсонгүй</td></tr>';
-    updateStats([]);
-    return;
+      // Add land class and click handlers (attach to all ids so clicks always work)
+      host.querySelectorAll('[id]').forEach(el => {
+        el.classList.add('land');
+        const uid = (el.id||'').toUpperCase();
+
+        // show region (legend) label for this country in the map hint when hovering
+        el.addEventListener('mouseenter', (ev) => {
+          ev.stopPropagation();
+          // show country name in floating tooltip
+          showMapHint(countryNameForUid(uid));
+          const tip = document.getElementById('map-tooltip');
+          if(tip){ tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
+        });
+        el.addEventListener('mouseleave', (ev) => {
+          ev.stopPropagation();
+          // hide tooltip and restore pills/hint state
+          restoreMapHint();
+        });
+
+        if(partnerIds.has(uid)){
+          el.classList.add('has-data');
+          // attach click handler only for countries that have data
+          el.addEventListener('click', (ev) => { ev.stopPropagation(); console.debug('map click', uid); toggleMapCountry(uid); });
+        } else {
+          // Do not disable pointer events on parent/group elements that contain
+          // child elements which themselves are partner shapes. Disabling pointer
+          // events on a container would make its children non-interactive.
+          const hasPartnerDescendant = Array.from(el.querySelectorAll('[id]')).some(ch => partnerIds.has((ch.id||'').toUpperCase()));
+          if (!hasPartnerDescendant) {
+            const prev = el.getAttribute('style') || '';
+            el.setAttribute('style', prev + ';cursor:default;pointer-events:none;');
+          }
+        }
+      });
+      syncMapSelection();
+
+      // Add a robust hover fallback: on mousemove find the element under cursor
+      // and show its country name in the hint. This helps when SVG groups/parents
+      // intercept pointer events or IDs are nested.
+      host.addEventListener('mousemove', (ev) => {
+        const el = document.elementFromPoint(ev.clientX, ev.clientY);
+        if(!el) return;
+        let node = el;
+        // climb until we find an element with an id or reach the host svg
+        while(node && node !== host && !node.id) node = node.parentNode;
+        if(node && node.id){
+          // show country name for hovered element
+          showMapHint(countryNameForUid(node.id));
+          const tip = document.getElementById('map-tooltip');
+          if(tip){ tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
+        }
+      });
+      host.addEventListener('mouseleave', () => restoreMapHint());
+      host.addEventListener('type', () => restoreMapHint());
+    } catch(e){ console.warn('Map SVG load failed:',e); }
   }
 
-  tb.innerHTML = data.map((d,i) => `
-    <tr data-n="${d.n}" onclick="selectRow(${d.n})" class="${selIdx===d.n?'sel':''}">
-      <td class="num">${i+1}</td>
-      <td title="${d.country}">${d.country}</td>
-      <td title="${d.org}">${d.org}</td>
-      <td><span class="reg-pill reg-${regCode(d.reg)}">${regLabel(regCode(d.reg))}</span></td>
-      <td class="num">${d.date}</td>
-      <td title="${d.type}">${d.type}</td>
-    </tr>`).join('');
+  function getMapEl(uid){
+    // find element whose id matches uid case-insensitively
+    return document.querySelector(`[id="${uid}"]`)
+        || document.querySelector(`[id="${uid.toLowerCase()}"]`)
+        || Array.from(document.querySelectorAll('[id]')).find(e=>e.id.toUpperCase()===uid);
+  }
 
-  updateStats(data);
-}
+  function toggleMapCountry(uid){
+    const el = getMapEl(uid);
+    if(!el) return;
+    mapOverride = true;
+    if(activeMapIds.has(uid)){
+      activeMapIds.delete(uid);
+      el.classList.remove('map-on');
+    } else {
+      activeMapIds.add(uid);
+      el.classList.add('map-on');
+    }
+    updatePills();
+    render();
+  }
 
-function updateStats(data){
-  const elTotal = document.getElementById('s-total');
-  const elCountries = document.getElementById('s-countries');
-  if (elTotal) elTotal.textContent = data.length;
-  if (elCountries) elCountries.textContent = new Set(data.map(d=>d.svgId)).size;
-  const elEu = document.getElementById('s-eu');
-  const elAs = document.getElementById('s-as');
-  const elAm = document.getElementById('s-am');
-  const elOt = document.getElementById('s-ot');
-  if (elEu) elEu.textContent = data.filter(d=>regCode(d.reg)==='EU').length;
-  if (elAs) elAs.textContent = data.filter(d=>regCode(d.reg)==='AS').length;
-  if (elAm) elAm.textContent = data.filter(d=>regCode(d.reg)==='AM').length;
-  if (elOt) elOt.textContent = data.filter(d=>regCode(d.reg)==='OT').length;
-  
-}
+  function selectAllMap(){
+    activeMapIds = new Set(partnerIds);
+    mapOverride = false;
+    updatePills();
+    syncMapSelection();
+    render();
+  }
 
-// When the region filter changes, select all countries that match that region
-function handleRegChange(e){
-  const val = (e && e.target && e.target.value) || document.getElementById('reg-filter').value;
-  const code = regCode(val);
-  render(); // re-render first to ensure pills are up-to-date before we override them
-  if(!code){
-    // restore all partner selections when choosing "Бүх бүс нутаг"
-    activeMapIds = new Set(partnerIds); // restore all partners
+  function clearMapSelection(){
+    activeMapIds.clear();
+    mapOverride = true; // explicit empty selection
+    updatePills();
+    syncMapSelection();
+    render();
+  }
+
+  function syncMapSelection(){
+    // Keep blue only for explicit selections
+    document.querySelectorAll('#map-svg .land.map-on').forEach(el => {
+      const uid = (el.id || '').toUpperCase();
+      if (!activeMapIds.has(uid)) el.classList.remove('map-on');
+    });
+    activeMapIds.forEach(uid => {
+      const el = getMapEl(uid);
+      if (el) el.classList.add('map-on');
+    });
+  }
+
+  function updateMapHighlights(data){
+    // Light-highlight filtered countries without affecting explicit selections
+    document.querySelectorAll('#map-svg .land.map-highlight').forEach(el => el.classList.remove('map-highlight'));
+    const ids = new Set(data.map(d => (d.svgId || '').toUpperCase()));
+    ids.forEach(uid => {
+      if (!uid) return;
+      const el = getMapEl(uid);
+      if (!el || activeMapIds.has(uid)) return;
+      el.classList.add('map-highlight');
+    });
+    
+  }
+
+  function updatePills(){
+    const container = document.getElementById('map-filters');
+    let hint = document.getElementById('map-hint');
+    // If the hint element was removed or is missing, recreate a safe fallback
+    if(!hint){
+      hint = document.createElement('span');
+      hint.id = 'map-hint';
+      hint.className = 'map-hint';
+      hint.textContent = 'Газрын зурган дээр улс дарж шүүх';
+    }
+    container.innerHTML = '';
+    if(!activeMapIds.size){
+      container.appendChild(hint);
+      hint.style.display = '';
+      return;
+    }
+    hint.style.display = 'none';
+    activeMapIds.forEach(uid => {
+      const names = [...new Set(RAW.filter(d=>d.svgId.toUpperCase()===uid).map(d=>d.country))].join(' / ');
+      const pill = document.createElement('span');
+      pill.className = 'map-pill';
+      pill.innerHTML = names + ' <span class="x">✕</span>';
+      pill.addEventListener('click', () => toggleMapCountry(uid));
+      container.appendChild(pill);
+    });
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // Rebuild the type-filter options based on the provided data set
+  function updateTypeFilter(data){
+    const sel = document.getElementById('type-filter');
+    if(!sel) return;
+    const current = sel.value;
+    const types = Array.from(new Set(data.map(d=>d.type).filter(Boolean)));
+    // sort types for stability
+    types.sort((a,b)=>a.localeCompare(b));
+    let html = '<option value="">Бүх төрөл</option>' + types.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+    sel.innerHTML = html;
+    // restore previous selection if still present
+    if(types.includes(current)) sel.value = current; else sel.value = '';
+  }
+
+  // ── TABLE RENDER ──────────────────────────────────────────────────────────────
+  function render(){
+    const q  = (document.getElementById('map-search') && document.getElementById('map-search').value || '').toLowerCase();
+    // normalize region select value to canonical code (EU/AS/AM/OT)
+    const rg = regCode(document.getElementById('reg-filter').value);
+    const tp = document.getElementById('type-filter').value;
+
+    let data;
+    if (activeMapIds.size && mapOverride) {
+      // When the user explicitly selected countries on the map, filter the RAW
+      // rows to those countries but still apply search/region/type filters so
+      // the table respects the `type-filter`.
+      data = RAW.filter(d => {
+        if(!activeMapIds.has((d.svgId||'').toUpperCase())) return false;
+        if(q && !d.org.toLowerCase().includes(q) && !d.country.toLowerCase().includes(q)) return false;
+        if(rg && regCode(d.reg) !== rg) return false;
+        if(tp && !d.type.includes(tp)) return false;
+        return true;
+      });
+    } else {
+      // Normal filtering path: apply search, region and type filters together.
+      data = RAW.filter(d => {
+        if(q && !d.org.toLowerCase().includes(q) && !d.country.toLowerCase().includes(q)) return false;
+        if(rg && regCode(d.reg) !== rg) return false;
+        if(tp && !d.type.includes(tp)) return false;
+        return true;
+      });
+    }
+
+    if(sortKey==='date') data.sort((a,b)=>sortDir*(a.date>b.date?1:-1));
+    
+    // If the user hasn't explicitly clicked the map (no override), make the
+    // map reflect the current filtered dataset (so type/reg filters update countries).
+    if(!mapOverride){
+      const ids = new Set(data.map(d => (d.svgId||'').toUpperCase()).filter(Boolean));
+      activeMapIds = ids;
+      updatePills();
+    }
+
+    syncMapSelection();
+    updateMapHighlights(data);
+    // refresh available types for the current visible dataset
+    updateTypeFilter(data);
+
+    const tb = document.getElementById('tbody');
+    if(!data.length){
+      tb.innerHTML='<tr><td colspan="6" class="empty">Илэрц олдсонгүй</td></tr>';
+      updateStats([]);
+      return;
+    }
+
+    tb.innerHTML = data.map((d,i) => `
+      <tr data-n="${d.n}" onclick="selectRow(${d.n})" class="${selIdx===d.n?'sel':''}">
+        <td class="num">${i+1}</td>
+        <td title="${d.country}">${d.country}</td>
+        <td title="${d.org}">${d.org}</td>
+        <td><span class="reg-pill reg-${regCode(d.reg)}">${regLabel(regCode(d.reg))}</span></td>
+        <td class="num">${d.date}</td>
+        <td title="${d.type}">${d.type}</td>
+      </tr>`).join('');
+
+    updateStats(data);
+  }
+
+  function updateStats(data){
+    const elTotal = document.getElementById('s-total');
+    const elCountries = document.getElementById('s-countries');
+    if (elTotal) elTotal.textContent = data.length;
+    if (elCountries) elCountries.textContent = new Set(data.map(d=>d.svgId)).size;
+    const elEu = document.getElementById('s-eu');
+    const elAs = document.getElementById('s-as');
+    const elAm = document.getElementById('s-am');
+    const elOt = document.getElementById('s-ot');
+    if (elEu) elEu.textContent = data.filter(d=>regCode(d.reg)==='EU').length;
+    if (elAs) elAs.textContent = data.filter(d=>regCode(d.reg)==='AS').length;
+    if (elAm) elAm.textContent = data.filter(d=>regCode(d.reg)==='AM').length;
+    if (elOt) elOt.textContent = data.filter(d=>regCode(d.reg)==='OT').length;
+    
+  }
+
+  // When the region filter changes, select all countries that match that region
+  function handleRegChange(e){
+    const val = (e && e.target && e.target.value) || document.getElementById('reg-filter').value;
+    const code = regCode(val);
+    render(); // re-render first to ensure pills are up-to-date before we override them
+    if(!code){
+      // restore all partner selections when choosing "Бүх бүс нутаг"
+      activeMapIds = new Set(partnerIds); // restore all partners
+      mapOverride = false;
+      updatePills();
+      render();
+      return;
+    }
+    // collect unique svgIds for rows matching the region code
+    const ids = new Set(RAW.filter(d=>regCode(d.reg)===code).map(d=> (d.svgId||'').toUpperCase()).filter(Boolean));
+    // populate pills/highlights for the region but do not enable map override
+    activeMapIds.clear();
+    ids.forEach(id => activeMapIds.add(id));
     mapOverride = false;
     updatePills();
     render();
-    return;
   }
-  // collect unique svgIds for rows matching the region code
-  const ids = new Set(RAW.filter(d=>regCode(d.reg)===code).map(d=> (d.svgId||'').toUpperCase()).filter(Boolean));
-  // populate pills/highlights for the region but do not enable map override
-  activeMapIds.clear();
-  ids.forEach(id => activeMapIds.add(id));
-  mapOverride = false;
-  updatePills();
-  render();
-}
 
-// ── DETAIL PANEL ──────────────────────────────────────────────────────────────
-function selectRow(n){
-  if(selIdx===n){ closeDetail(); return; }
-  selIdx = n;
-  // Re-render table to ensure the selected row has .sel class
-  render();
-  const d = RAW.find(r=>r.n===n);
-  // remove any existing inline detail row
-  const prevInline = document.getElementById('inline-detail-row');
-  if(prevInline) prevInline.remove();
-  // find the rendered table row for this item
-  const tr = document.querySelector(`#tbody tr[data-n="${n}"]`);
-  if(tr){
-    const row = document.createElement('tr');
-    row.id = 'inline-detail-row';
-    const td = document.createElement('td');
-    td.colSpan = 6;
-    td.innerHTML = `
-      <div class="detail show">
-        <div class="detail-header">
-          <div>
-            <div class="detail-title">${escapeHtml(d.org)}</div>
-            <div class="detail-sub">${escapeHtml(d.country)}</div>
+  // ── DETAIL PANEL ──────────────────────────────────────────────────────────────
+  function selectRow(n){
+    if(selIdx===n){ closeDetail(); return; }
+    selIdx = n;
+    // Re-render table to ensure the selected row has .sel class
+    render();
+    const d = RAW.find(r=>r.n===n);
+    // remove any existing inline detail row
+    const prevInline = document.getElementById('inline-detail-row');
+    if(prevInline) prevInline.remove();
+    // find the rendered table row for this item
+    const tr = document.querySelector(`#tbody tr[data-n="${n}"]`);
+    if(tr){
+      const row = document.createElement('tr');
+      row.id = 'inline-detail-row';
+      const td = document.createElement('td');
+      td.colSpan = 6;
+      td.innerHTML = `
+        <div class="detail show">
+          <div class="detail-header">
+            <div>
+              <div class="detail-title">${escapeHtml(d.org)}</div>
+              <div class="detail-sub">${escapeHtml(d.country)}</div>
+            </div>
+            <button class="close-btn" onclick="closeDetail()">Хаах ✕</button>
           </div>
-          <button class="close-btn" onclick="closeDetail()">Хаах ✕</button>
-        </div>
-        <div class="detail-grid">
-          <div class="detail-row"><span class="detail-label">Огноо</span><span class="detail-val">${escapeHtml(d.date)}</span></div>
-          <div class="detail-row"><span class="detail-label">Төрөл</span><span class="detail-val">${escapeHtml(d.type)}</span></div>
-          <div class="detail-row"><span class="detail-label">Бүс нутаг</span><span class="detail-val">${escapeHtml(regLabel(regCode(d.reg)))}</span></div>
-          <div class="detail-row"><span class="detail-label">Улс</span><span class="detail-val">${escapeHtml(d.country)}</span></div>
-        </div>
-      </div>`;
-    row.appendChild(td);
-    tr.parentNode.insertBefore(row, tr.nextSibling);
-    // ensure the global detail is hidden to avoid duplicate content
-    const global = document.getElementById('detail'); if(global) global.className = 'detail';
-  } else {
-    // fallback: populate global detail panel if row not found
-    if(d){
-      document.getElementById('d-name').textContent     = d.org;
-      document.getElementById('d-country').textContent  = d.country;
-      document.getElementById('d-date').textContent     = d.date;
-      document.getElementById('d-type').textContent     = d.type;
-      document.getElementById('d-reg').textContent      = regLabel(regCode(d.reg));
-      document.getElementById('d-country2').textContent = d.country;
-      document.getElementById('detail').className       = 'detail show';
-    }
-  }
-  render();
-}
-
-function closeDetail(){
-  selIdx = null;
-  // remove inline detail row if present
-  const prevInline = document.getElementById('inline-detail-row');
-  if(prevInline) prevInline.remove();
-  const global = document.getElementById('detail'); if(global) global.className = 'detail';
-  render();
-}
-
-function sortBy(k){
-  if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
-  document.getElementById('si-date').textContent = sortDir===1?'↑':'↓';
-  render();
-}
-
-// ── INIT ──────────────────────────────────────────────────────────────────────
-function initMOU() {
-    const mapSearchEl = document.getElementById('map-search');
-
-    function debounce(fn, ms){ let t; return function(...args){ clearTimeout(t); t = setTimeout(()=> fn.apply(this,args), ms); }; }
-    
-    const debouncedRender = debounce(()=>{ 
-        mapOverride = false; 
-        activeMapIds = new Set(partnerIds);
-        render(); 
-    }, 180);
-
-    if (mapSearchEl) mapSearchEl.addEventListener('input', debouncedRender);
-    
-    document.getElementById('reg-filter').addEventListener('change', handleRegChange);
-    
-    document.getElementById('type-filter').addEventListener('change', () => { 
-        mapOverride = false;
-        activeMapIds = new Set(partnerIds);
-        render(); 
-    });
-    
-    document.getElementById('si-date').addEventListener('click', () => sortBy('date'));
-
-    activeMapIds = new Set(partnerIds);
-    updatePills();
-
-    let hoverRaf = null;
-    document.addEventListener('mousemove', (ev) => {
-        if (hoverRaf) return;
-        hoverRaf = requestAnimationFrame(() => {
-            hoverRaf = null;
-            const host = document.getElementById('map-svg');
-            if (!host) return;
-            const el = document.elementFromPoint(ev.clientX, ev.clientY);
-            if (!el) { restoreMapHint(); return; }
-            let node = el;
-            while(node && node !== host && !node.id) node = node.parentNode;
-            if (node && node.id) {
-                showMapHint(countryNameForUid(node.id || ''));
-                const tip = document.getElementById('map-tooltip');
-                if (tip) { tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
-            } else {
-                restoreMapHint();
-            }
-        });
-    });
-
-    function isTypingInForm(){ 
-        const t = document.activeElement; 
-        if(!t) return false; 
-        const tag = (t.tagName||'').toLowerCase(); 
-        return tag==='input'||tag==='textarea'||t.isContentEditable; 
-    }
-
-    document.addEventListener('keydown', (e)=>{
-        if (e.key === '/' && !isTypingInForm()){
-            e.preventDefault(); 
-            mapSearchEl && mapSearchEl.focus(); 
-            mapSearchEl && mapSearchEl.select(); 
-            return;
-        }
-        if (e.key === 'Escape'){
-            if (mapSearchEl && document.activeElement === mapSearchEl){ 
-                mapSearchEl.value=''; 
-                debouncedRender(); 
-                mapSearchEl.blur(); 
-            } else restoreMapHint();
-            return;
-        }
-        if (!isTypingInForm() && e.key.length===1 && !e.ctrlKey && !e.metaKey){
-            if (mapSearchEl){ 
-                mapSearchEl.focus(); 
-                mapSearchEl.value = (mapSearchEl.value || '') + e.key; 
-                debouncedRender(); 
-            }
-        }
-    });
-
-    loadMap().then(() => { render(); }).catch(() => { render(); });
-}
-
-// auto-init
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMOU);
-} else {
-    initMOU();
-}
-updatePills();
-// Load the SVG first, then render the table so map-based highlights
-// and selections are in sync. If the SVG load fails, still render.
-// small UX helpers: hover watcher and keyboard shortcuts
-// throttle hover updates with rAF to avoid expensive work on every mousemove
-let hoverRaf = null;
-document.addEventListener('mousemove', (ev) => {
-  if (hoverRaf) return;
-  hoverRaf = requestAnimationFrame(() => {
-    hoverRaf = null;
-    const host = document.getElementById('map-svg');
-    if (!host) return;
-    const el = document.elementFromPoint(ev.clientX, ev.clientY);
-    if (!el) { restoreMapHint(); return; }
-    let node = el;
-    while(node && node !== host && !node.id) node = node.parentNode;
-    if (node && node.id) {
-      showMapHint(countryNameForUid(node.id || ''));
-      const tip = document.getElementById('map-tooltip');
-      if (tip) { tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
+          <div class="detail-grid">
+            <div class="detail-row"><span class="detail-label">Огноо</span><span class="detail-val">${escapeHtml(d.date)}</span></div>
+            <div class="detail-row"><span class="detail-label">Төрөл</span><span class="detail-val">${escapeHtml(d.type)}</span></div>
+            <div class="detail-row"><span class="detail-label">Бүс нутаг</span><span class="detail-val">${escapeHtml(regLabel(regCode(d.reg)))}</span></div>
+            <div class="detail-row"><span class="detail-label">Улс</span><span class="detail-val">${escapeHtml(d.country)}</span></div>
+          </div>
+        </div>`;
+      row.appendChild(td);
+      tr.parentNode.insertBefore(row, tr.nextSibling);
+      // ensure the global detail is hidden to avoid duplicate content
+      const global = document.getElementById('detail'); if(global) global.className = 'detail';
     } else {
-      restoreMapHint();
+      // fallback: populate global detail panel if row not found
+      if(d){
+        document.getElementById('d-name').textContent     = d.org;
+        document.getElementById('d-country').textContent  = d.country;
+        document.getElementById('d-date').textContent     = d.date;
+        document.getElementById('d-type').textContent     = d.type;
+        document.getElementById('d-reg').textContent      = regLabel(regCode(d.reg));
+        document.getElementById('d-country2').textContent = d.country;
+        document.getElementById('detail').className       = 'detail show';
+      }
+    }
+    render();
+  }
+
+  function closeDetail(){
+    selIdx = null;
+    // remove inline detail row if present
+    const prevInline = document.getElementById('inline-detail-row');
+    if(prevInline) prevInline.remove();
+    const global = document.getElementById('detail'); if(global) global.className = 'detail';
+    render();
+  }
+
+  function sortBy(k){
+    if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
+    document.getElementById('si-date').textContent = sortDir===1?'↑':'↓';
+    render();
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────────
+  function initMOU() {
+      const mapSearchEl = document.getElementById('map-search');
+
+      function debounce(fn, ms){ let t; return function(...args){ clearTimeout(t); t = setTimeout(()=> fn.apply(this,args), ms); }; }
+      
+      const debouncedRender = debounce(()=>{ 
+          mapOverride = false; 
+          activeMapIds = new Set(partnerIds);
+          render(); 
+      }, 180);
+
+      if (mapSearchEl) mapSearchEl.addEventListener('input', debouncedRender);
+      
+      document.getElementById('reg-filter').addEventListener('change', handleRegChange);
+      
+      document.getElementById('type-filter').addEventListener('change', () => { 
+          mapOverride = false;
+          activeMapIds = new Set(partnerIds);
+          render(); 
+      });
+      
+      document.getElementById('si-date').addEventListener('click', () => sortBy('date'));
+
+      activeMapIds = new Set(partnerIds);
+      updatePills();
+
+      let hoverRaf = null;
+      document.addEventListener('mousemove', (ev) => {
+          if (hoverRaf) return;
+          hoverRaf = requestAnimationFrame(() => {
+              hoverRaf = null;
+              const host = document.getElementById('map-svg');
+              if (!host) return;
+              const el = document.elementFromPoint(ev.clientX, ev.clientY);
+              if (!el) { restoreMapHint(); return; }
+              let node = el;
+              while(node && node !== host && !node.id) node = node.parentNode;
+              if (node && node.id) {
+                  showMapHint(countryNameForUid(node.id || ''));
+                  const tip = document.getElementById('map-tooltip');
+                  if (tip) { tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
+              } else {
+                  restoreMapHint();
+              }
+          });
+      });
+
+      function isTypingInForm(){ 
+          const t = document.activeElement; 
+          if(!t) return false; 
+          const tag = (t.tagName||'').toLowerCase(); 
+          return tag==='input'||tag==='textarea'||t.isContentEditable; 
+      }
+
+      document.addEventListener('keydown', (e)=>{
+          if (e.key === '/' && !isTypingInForm()){
+              e.preventDefault(); 
+              mapSearchEl && mapSearchEl.focus(); 
+              mapSearchEl && mapSearchEl.select(); 
+              return;
+          }
+          if (e.key === 'Escape'){
+              if (mapSearchEl && document.activeElement === mapSearchEl){ 
+                  mapSearchEl.value=''; 
+                  debouncedRender(); 
+                  mapSearchEl.blur(); 
+              } else restoreMapHint();
+              return;
+          }
+          if (!isTypingInForm() && e.key.length===1 && !e.ctrlKey && !e.metaKey){
+              if (mapSearchEl){ 
+                  mapSearchEl.focus(); 
+                  mapSearchEl.value = (mapSearchEl.value || '') + e.key; 
+                  debouncedRender(); 
+              }
+          }
+      });
+
+      loadMap().then(() => { render(); }).catch(() => { render(); });
+  }
+
+  // auto-init
+  if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMOU);
+  } else {
+      initMOU();
+  }
+  updatePills();
+  // Load the SVG first, then render the table so map-based highlights
+  // and selections are in sync. If the SVG load fails, still render.
+  // small UX helpers: hover watcher and keyboard shortcuts
+  // throttle hover updates with rAF to avoid expensive work on every mousemove
+  let hoverRaf = null;
+  document.addEventListener('mousemove', (ev) => {
+    if (hoverRaf) return;
+    hoverRaf = requestAnimationFrame(() => {
+      hoverRaf = null;
+      const host = document.getElementById('map-svg');
+      if (!host) return;
+      const el = document.elementFromPoint(ev.clientX, ev.clientY);
+      if (!el) { restoreMapHint(); return; }
+      let node = el;
+      while(node && node !== host && !node.id) node = node.parentNode;
+      if (node && node.id) {
+        showMapHint(countryNameForUid(node.id || ''));
+        const tip = document.getElementById('map-tooltip');
+        if (tip) { tip.style.left = (ev.clientX + 12) + 'px'; tip.style.top = (ev.clientY + 12) + 'px'; }
+      } else {
+        restoreMapHint();
+      }
+    });
+  });
+
+  function isTypingInForm(){ const t = document.activeElement; if(!t) return false; const tag = (t.tagName||'').toLowerCase(); return tag==='input'||tag==='textarea'||t.isContentEditable; }
+  document.addEventListener('keydown', (e)=>{
+    // '/' focuses search
+    if (e.key === '/' && !isTypingInForm()){
+      e.preventDefault(); mapSearchEl && mapSearchEl.focus(); mapSearchEl && mapSearchEl.select(); return;
+    }
+    // Escape clears search or restores hint
+    if (e.key === 'Escape'){
+      if (mapSearchEl && document.activeElement === mapSearchEl){ mapSearchEl.value=''; debouncedRender(); mapSearchEl.blur(); }
+      else restoreMapHint();
+      return;
+    }
+    // If printable char while not typing in a form, focus search and append
+    if (!isTypingInForm() && e.key.length===1 && !e.ctrlKey && !e.metaKey){
+      if (mapSearchEl){ mapSearchEl.focus(); mapSearchEl.value = (mapSearchEl.value || '') + e.key; debouncedRender(); }
     }
   });
-});
 
-function isTypingInForm(){ const t = document.activeElement; if(!t) return false; const tag = (t.tagName||'').toLowerCase(); return tag==='input'||tag==='textarea'||t.isContentEditable; }
-document.addEventListener('keydown', (e)=>{
-  // '/' focuses search
-  if (e.key === '/' && !isTypingInForm()){
-    e.preventDefault(); mapSearchEl && mapSearchEl.focus(); mapSearchEl && mapSearchEl.select(); return;
-  }
-  // Escape clears search or restores hint
-  if (e.key === 'Escape'){
-    if (mapSearchEl && document.activeElement === mapSearchEl){ mapSearchEl.value=''; debouncedRender(); mapSearchEl.blur(); }
-    else restoreMapHint();
-    return;
-  }
-  // If printable char while not typing in a form, focus search and append
-  if (!isTypingInForm() && e.key.length===1 && !e.ctrlKey && !e.metaKey){
-    if (mapSearchEl){ mapSearchEl.focus(); mapSearchEl.value = (mapSearchEl.value || '') + e.key; debouncedRender(); }
-  }
-});
-
-// Load the SVG first, then render the table so map-based highlights
-// and selections are in sync. If the SVG load fails, still render.
-loadMap().then(() => { render(); }).catch(() => { render(); });
-</script>
-</body>
-</html>
+  // Load the SVG first, then render the table so map-based highlights
+  // and selections are in sync. If the SVG load fails, still render.
+  loadMap().then(() => { render(); }).catch(() => { render(); });
+  </script>
+  </body>
+  </html>
